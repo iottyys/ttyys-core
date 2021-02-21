@@ -34,7 +34,7 @@ public class ServiceExecutionAspect {
     @Around("ServiceExecutionAspect.exec() && @annotation(execution)")
     public Object doExec(ProceedingJoinPoint joinPoint, Execution execution) throws Throwable {
         Map<String, Object> headers = ImmutableMap.<String, Object>builder()
-                .put("serviceUri", execution.value())
+//                .put("serviceUri", execution.value())
                 .putAll(this.processArgumentType(joinPoint, execution))
                 .putAll(this.processReturnType(joinPoint, execution))
                 .build();

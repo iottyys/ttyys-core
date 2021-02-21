@@ -1,6 +1,5 @@
 package io.ttyys.core.support.camel.routes;
 
-import com.snszyk.iiot.lim.quota.domain.condition.Condition;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
