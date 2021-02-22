@@ -30,12 +30,22 @@ class StandardApplicationServiceRouteTest {
     }
 
     @Test
-    void test1() {
+    void testJava() {
         producer.requestBodyAndHeaders(new Object(),
             [
                 serviceUris: 'direct:start1,direct:start2',
                 isJsonInput: false, isJavaInput: true, inputSchema: 'java.lang.Object',
                 isJsonOutput: false, isJavaOutput: true, outputSchema: 'java.lang.Object'
+            ])
+    }
+
+    @Test
+    void testJson() {
+        producer.requestBodyAndHeaders("{}",
+            [
+                serviceUris: 'direct:start1,direct:start2',
+                isJsonInput: true, isJavaInput: false, inputSchema: 'classpath:**/test.input.schema.json',
+                isJsonOutput: true, isJavaOutput: false, outputSchema: 'classpath:**/test.output.schema.json'
             ])
     }
 }

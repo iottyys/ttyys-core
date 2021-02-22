@@ -13,7 +13,7 @@ public class StandardApplicationServiceRouter extends RouteBuilder {
         from("direct:io.ttyys.core.support.StandardApplicationService")
                 .choice()
                     .when(simple("${header.isJsonInput}", boolean.class))
-                        .toD("json-schema-validate:${header.inputSchema}")
+                        .toD("json-validator:${header.inputSchema}")
                         // todo 转换为对象（jsonschema2pojo gradle plugin）
                         .unmarshal().json()
                         .endChoice()
@@ -26,7 +26,7 @@ public class StandardApplicationServiceRouter extends RouteBuilder {
                     .when(simple("${header.isJsonOutput}", boolean.class))
                         // todo 如果为json，则转换为json
                         .marshal().json()
-                        .toD("json-schema-validate:${header.outputSchema}")
+                        .toD("json-validator:${header.outputSchema}")
                         .endChoice()
                     .when(simple("${header.isJavaOutput}", boolean.class))
                         .toD("bean-validator:${header.outputSchema}")
