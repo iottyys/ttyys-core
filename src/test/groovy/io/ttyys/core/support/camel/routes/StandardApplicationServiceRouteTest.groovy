@@ -8,11 +8,15 @@ import org.apache.camel.test.spring.junit5.MockEndpoints
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.core.io.ResourceLoader
 
 @CamelSpringBootTest
 @SpringBootApplication(scanBasePackages = "io.ttyys.core")
 @MockEndpoints()
 class StandardApplicationServiceRouteTest {
+
+    @Autowired
+    ResourceLoader loader
 
     @Autowired
     ProducerTemplate template
@@ -44,8 +48,8 @@ class StandardApplicationServiceRouteTest {
         producer.requestBodyAndHeaders("{}",
             [
                 serviceUris: 'direct:start1,direct:start2',
-                isJsonInput: true, isJavaInput: false, inputSchema: 'classpath:**/test.input.schema.json',
-                isJsonOutput: true, isJavaOutput: false, outputSchema: 'classpath:**/test.output.schema.json'
+                isJsonInput: true, isJavaInput: false, inputSchema: 'classpath:io/ttyys/core/test.input.schema.json',
+                isJsonOutput: true, isJavaOutput: false, outputSchema: 'classpath:io/ttyys/core/test.output.schema.json'
             ])
     }
 }
