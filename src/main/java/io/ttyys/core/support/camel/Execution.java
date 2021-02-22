@@ -10,7 +10,7 @@ import java.lang.annotation.Documented;
 @Target(ElementType.METHOD)
 @Documented
 public @interface Execution {
-    String serviceEndpoint();
+    String serviceEndpoints();
     InterfaceType input() default InterfaceType.JavaObj;
     InterfaceType output() default InterfaceType.JavaObj;
 }

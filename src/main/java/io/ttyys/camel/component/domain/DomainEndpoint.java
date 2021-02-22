@@ -2,6 +2,7 @@ package io.ttyys.camel.component.domain;
 
 import org.apache.camel.BeanScope;
 import org.apache.camel.Component;
+import org.apache.camel.Producer;
 import org.apache.camel.component.bean.*;
 import org.apache.camel.spi.UriParam;
 
@@ -9,34 +10,41 @@ public class DomainEndpoint extends BeanEndpoint {
     private transient BeanProcessor processor;
 
     @UriParam
-    private String injection;
+    private String injection = "";
 
     public DomainEndpoint(String uri, Component component) {
         super(uri, component);
     }
 
     @Override
-    protected void doInit() throws Exception {
-        super.doInit();
+    public Producer createProducer() {
+        return new DomainProducer(this, processor);
+    }
 
+    public BeanProcessor getProcessor() {
+        return processor;
+    }
+
+    @Override
+    protected void doInit() {
         if (processor == null) {
             BeanHolder holder = getBeanHolder();
             if (holder == null) {
                 ParameterMappingStrategy strategy
                         = ParameterMappingStrategyHelper.createParameterMappingStrategy(getCamelContext());
-                DomainComponent bean = getCamelContext().getComponent("domain", DomainComponent.class);
-                RegistryBean registryBean
-                        = new RegistryBean(getCamelContext(), getBeanName(), strategy, bean);
-//                DomainRegistryBean domainRegistryBean =
+                DomainComponent domain = getCamelContext().getComponent("domain", DomainComponent.class);
+                DomainRegistryBean registryBean
+                        = new DomainRegistryBean(getCamelContext(), getBeanName(), strategy, domain);
                 if (getScope() == BeanScope.Singleton) {
-                    // if singleton then create a cached holder that use the same singleton instance
                     holder = registryBean.createCacheHolder();
                 } else {
                     holder = registryBean;
                 }
+                if (holder == null) {
+                    holder = registryBean;
+                }
             }
             if (getScope() == BeanScope.Request) {
-                // wrap in registry scoped
                 holder = new RequestBeanHolder(holder);
             }
             processor = new BeanProcessor(holder);
@@ -59,6 +67,7 @@ public class DomainEndpoint extends BeanEndpoint {
         return injection;
     }
 
+    @SuppressWarnings("unused")
     public void setInjection(String injection) {
         this.injection = injection;
     }

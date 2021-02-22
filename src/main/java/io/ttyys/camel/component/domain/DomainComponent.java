@@ -10,8 +10,6 @@ import org.apache.camel.util.PropertiesHelper;
 import java.util.Map;
 
 public class DomainComponent extends BeanComponent {
-
-
     @Override
     protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
         DomainEndpoint endpoint = new DomainEndpoint(uri, this);

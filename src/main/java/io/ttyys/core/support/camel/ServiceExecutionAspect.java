@@ -20,6 +20,7 @@ public class ServiceExecutionAspect {
     @SuppressWarnings("FieldCanBeLocal")
     private final String point = "direct:io.ttyys.core.support.StandardApplicationService";
 
+    @SuppressWarnings("unused")
     @EndpointInject(property = "point")
     private ProducerTemplate producer;
 
@@ -34,7 +35,7 @@ public class ServiceExecutionAspect {
     @Around("ServiceExecutionAspect.exec() && @annotation(execution)")
     public Object doExec(ProceedingJoinPoint joinPoint, Execution execution) throws Throwable {
         Map<String, Object> headers = ImmutableMap.<String, Object>builder()
-//                .put("serviceUri", execution.value())
+                .put("serviceUris", execution.serviceEndpoints())
                 .putAll(this.processArgumentType(joinPoint, execution))
                 .putAll(this.processReturnType(joinPoint, execution))
                 .build();
@@ -46,22 +47,36 @@ public class ServiceExecutionAspect {
         if (args.length > 1) {
             throw new IllegalArgumentException("support at most one argument");
         }
-        return args.length > 0 ? args[0] : new Object();
+        return args.length > 0 ? args[0] != null ? args[0] : new Object() : new Object();
     }
 
     protected Map<String, Object> processArgumentType(ProceedingJoinPoint joinPoint, Execution execution) {
+        if (execution.input().isJava() && StringUtils.isEmpty(execution.input().schema())) {
+            throw new IllegalArgumentException("Parameter type of interface must have a schema file. ");
+        }
+        String paramType = ((MethodSignature) joinPoint.getSignature()).getParameterTypes()[0].getName();
+        if (execution.input().isJava() && !StringUtils.isEmpty(execution.input().schema())) {
+            paramType = execution.input().schema();
+        }
         return ImmutableMap.<String, Object>builder()
-                .put("inputSchema", execution.input()) // todo 改为json-schema-validator可以识别的url
-                .put("marshal", StringUtils.isEmpty(execution.input()))
+                .put("isJsonInput", execution.input().isJson())
+                .put("isJavaInput", execution.input().isJava())
+                .put("inputSchema", paramType)
                 .build();
     }
 
     protected Map<String, Object> processReturnType(ProceedingJoinPoint joinPoint, Execution execution) {
-        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+        if (execution.output().isJava() && StringUtils.isEmpty(execution.output().schema())) {
+            throw new IllegalArgumentException("Return type of interface must have a schema file. ");
+        }
+        String returnType = ((MethodSignature) joinPoint.getSignature()).getReturnType().getName();
+        if (execution.output().isJava() && !StringUtils.isEmpty(execution.output().schema())) {
+            returnType = execution.output().schema();
+        }
         return ImmutableMap.<String, Object>builder()
-                .put("outputSchema", execution.output()) // todo 改为json-schema-validator可以识别的url
-                .put("unmarshal", StringUtils.isEmpty(execution.output()))
-                .put("returnType", signature.getReturnType())
+                .put("isJsonOutput", execution.output().isJson())
+                .put("isJavaOutput", execution.output().isJava())
+                .put("outputSchema", returnType)
                 .build();
     }
 }

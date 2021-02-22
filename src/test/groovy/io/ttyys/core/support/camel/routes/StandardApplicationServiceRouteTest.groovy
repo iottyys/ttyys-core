@@ -19,11 +19,23 @@ class StandardApplicationServiceRouteTest {
     @EndpointInject("mock:log:direct:io.ttyys.core.support.StandardApplicationService")
     MockEndpoint mock
 
+    @EndpointInject("direct:io.ttyys.core.support.StandardApplicationService")
+    private ProducerTemplate producer;
+
     @Test
     void test() {
         mock.expectedBodiesReceived("Hello");
         template.sendBody("direct:io.ttyys.core.support.StandardApplicationService", "Hello");
         mock.assertIsSatisfied();
+    }
 
+    @Test
+    void test1() {
+        producer.requestBodyAndHeaders(new Object(),
+            [
+                serviceUris: 'direct:start1,direct:start2',
+                isJsonInput: false, isJavaInput: true, inputSchema: 'java.lang.Object',
+                isJsonOutput: false, isJavaOutput: true, outputSchema: 'java.lang.Object'
+            ])
     }
 }
