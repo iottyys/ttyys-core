@@ -6,5 +6,6 @@ import java.lang.annotation.*;
 @Target(ElementType.METHOD)
 @Documented
 public @interface Invoke {
-
+    String serviceInterface();
+    String serviceMethod();
 }

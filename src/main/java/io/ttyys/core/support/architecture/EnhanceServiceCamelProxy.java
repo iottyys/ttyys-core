@@ -1,13 +1,15 @@
-package io.ttyys.core.support.camel;
+package io.ttyys.core.support.architecture;
+
+import io.ttyys.core.support.camel.Execution;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
-public class ApplicationServiceCamelProxy<T> implements InvocationHandler {
+public class EnhanceServiceCamelProxy<T> implements InvocationHandler {
 
     private final Class<T> interfaceType;
 
-    public ApplicationServiceCamelProxy(Class<T> interfaceType) {
+    public EnhanceServiceCamelProxy(Class<T> interfaceType) {
         this.interfaceType = interfaceType;
     }
 

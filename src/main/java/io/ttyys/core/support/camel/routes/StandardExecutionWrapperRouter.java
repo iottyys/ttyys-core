@@ -1,16 +1,14 @@
 package io.ttyys.core.support.camel.routes;
 
+import io.ttyys.core.support.camel.ExecutionProcessor;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
 @Component
-public class StandardApplicationServiceRouter extends RouteBuilder {
-
+public class StandardExecutionWrapperRouter extends RouteBuilder {
     @Override
     public void configure() {
-        from("direct:start1").log("test logic1");
-        from("direct:start2").log("test logic2");
-        from("direct:io.ttyys.core.support.StandardApplicationService")
+        from(ExecutionProcessor.POINT)
                 .choice()
                     .when(simple("${header.isJsonInput}", boolean.class))
                         .toD("json-validator:${header.inputSchema}")

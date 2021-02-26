@@ -1,10 +1,9 @@
-package io.ttyys.core.support.camel;
+package io.ttyys.core.support.architecture;
 
 import java.lang.annotation.*;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-public @interface ApplicationService {
-
+public @interface EnhanceService {
 }

@@ -8,17 +8,20 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.StandardAnnotationMetadata;
 
-public class ClassPathApplicationServiceScannerRegistrar implements ImportBeanDefinitionRegistrar, ResourceLoaderAware {
+public class ClassPathEnhanceServiceScannerRegistrar implements ImportBeanDefinitionRegistrar, ResourceLoaderAware {
     private ResourceLoader resourceLoader;
 
     @Override
     public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
-        AnnotationAttributes attributes = AnnotationAttributes.fromMap(importingClassMetadata.getAnnotationAttributes(EnableTYSupport.class.getName()));
+        AnnotationAttributes attributes = AnnotationAttributes
+                .fromMap(importingClassMetadata.getAnnotationAttributes(EnableEnhanceSupport.class.getName()));
+        assert attributes != null;
         String[] servicePackages = attributes.getStringArray("servicePackages");
         if (servicePackages.length == 0) {
-            servicePackages = new String[] { ((StandardAnnotationMetadata) importingClassMetadata).getIntrospectedClass().getPackage().getName() };
+            servicePackages = new String[] { ((StandardAnnotationMetadata) importingClassMetadata)
+                    .getIntrospectedClass().getPackage().getName() };
         }
-        ClassPathApplicationServiceScanner scanner = new ClassPathApplicationServiceScanner(registry);
+        ClassPathEnhanceServiceScanner scanner = new ClassPathEnhanceServiceScanner(registry);
         scanner.setResourceLoader(this.resourceLoader);
         scanner.doScan(servicePackages);
     }

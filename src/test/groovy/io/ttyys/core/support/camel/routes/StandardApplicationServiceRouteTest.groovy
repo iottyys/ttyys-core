@@ -48,8 +48,8 @@ class StandardApplicationServiceRouteTest {
         producer.requestBodyAndHeaders("{}",
             [
                 serviceUris: 'direct:start1,direct:start2',
-                isJsonInput: true, isJavaInput: false, inputSchema: 'classpath:io/ttyys/core/test.input.schema.json',
-                isJsonOutput: true, isJavaOutput: false, outputSchema: 'classpath:io/ttyys/core/test.output.schema.json'
+                isJsonInput: true, isJavaInput: false, inputSchema: 'classpath:io/ttyys/test/test.input.schema.json',
+                isJsonOutput: true, isJavaOutput: false, outputSchema: 'classpath:io/ttyys/test/test.output.schema.json'
             ])
     }
 }

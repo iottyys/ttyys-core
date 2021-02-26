@@ -1,14 +1,14 @@
 package io.ttyys.core.support.springboot;
 
-import io.ttyys.core.support.camel.ApplicationServiceCamelProxy;
+import io.ttyys.core.support.architecture.EnhanceServiceCamelProxy;
 import org.springframework.beans.factory.FactoryBean;
 
 import java.lang.reflect.Proxy;
 
-public class ApplicationServiceCamelProxyFactoryBean<T> implements FactoryBean<T> {
+public class EnhanceServiceCamelProxyFactoryBean<T> implements FactoryBean<T> {
     private final Class<T> interfaceType;
 
-    public ApplicationServiceCamelProxyFactoryBean(Class<T> interfaceType) {
+    public EnhanceServiceCamelProxyFactoryBean(Class<T> interfaceType) {
         this.interfaceType = interfaceType;
     }
 
@@ -18,7 +18,7 @@ public class ApplicationServiceCamelProxyFactoryBean<T> implements FactoryBean<T
         return (T) Proxy.newProxyInstance(
                 interfaceType.getClassLoader(),
                 new Class[]{interfaceType},
-                new ApplicationServiceCamelProxy<>(interfaceType));
+                new EnhanceServiceCamelProxy<>(interfaceType));
     }
 
     @Override

@@ -8,10 +8,10 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-@Import({SpringBootAutoConfiguration.class, ClassPathApplicationServiceScannerRegistrar.class})
-public @interface EnableTYSupport {
-    @AliasFor("servicePackages")
-    String[] value() default {};
-    @AliasFor("value")
+@Import({SpringBootAutoConfiguration.class,
+        ClassPathEnhanceServiceScannerRegistrar.class,
+        ClassPathEnhanceMapperScannerRegistrar.class})
+public @interface EnableEnhanceSupport {
     String[] servicePackages() default {};
+    String[] mapperPackages() default {};
 }

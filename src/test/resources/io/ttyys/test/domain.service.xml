@@ -1,0 +1,6 @@
+<routes xmlns="http://camel.apache.org/schema/spring">
+    <route>
+        <from uri="direct:domain" />
+        <log message="domain" />
+    </route>
+</routes>

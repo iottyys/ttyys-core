@@ -9,17 +9,16 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
-import org.springframework.util.ResourceUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.Map;
 
 @Aspect
 @Component
-public class ServiceExecutionAspect {
-    
-    @SuppressWarnings("FieldCanBeLocal")
-    private final String point = "direct:io.ttyys.core.support.StandardApplicationService";
+public class ExecutionProcessor {
+
+    public static final String POINT = "direct:io.ttyys.core.support.camel.routes.StandardExecutionWrapperRouter";
+
 
     @SuppressWarnings("unused")
     @EndpointInject(property = "point")
@@ -27,20 +26,21 @@ public class ServiceExecutionAspect {
 
     @SuppressWarnings("unused")
     public String getPoint() {
-        return this.point;
+        return POINT;
     }
 
     @Pointcut("@annotation(io.ttyys.core.support.camel.Execution)")
     private void exec() {}
 
-    @Around("ServiceExecutionAspect.exec() && @annotation(execution)")
+    @Around("ExecutionProcessor.exec() && @annotation(execution)")
     public Object doExec(ProceedingJoinPoint joinPoint, Execution execution) throws Throwable {
+        Object body = this.handleRequestBody(joinPoint);
         Map<String, Object> headers = ImmutableMap.<String, Object>builder()
                 .put("serviceUris", execution.serviceEndpoints())
                 .putAll(this.processArgumentType(joinPoint, execution))
                 .putAll(this.processReturnType(joinPoint, execution))
                 .build();
-        return producer.requestBodyAndHeaders(this.handleRequestBody(joinPoint), headers);
+        return this.producer.requestBodyAndHeaders(body, headers);
     }
 
     protected Object handleRequestBody(ProceedingJoinPoint joinPoint) {
@@ -52,10 +52,10 @@ public class ServiceExecutionAspect {
     }
 
     protected Map<String, Object> processArgumentType(ProceedingJoinPoint joinPoint, Execution execution) {
-        if (execution.input().isJava() && StringUtils.isEmpty(execution.input().schema())) {
-            throw new IllegalArgumentException("Parameter type of interface must have a schema file. ");
+        if (execution.input().isJson() && StringUtils.isEmpty(execution.input().schema())) {
+            throw new IllegalArgumentException("Parameter type of interface belong to Json must have a schema file. ");
         }
-        String paramType = ((MethodSignature) joinPoint.getSignature()).getParameterTypes()[0].getName();
+        String paramType = joinPoint.getArgs()[0].getClass().getName();
         if (execution.input().isJava() && !StringUtils.isEmpty(execution.input().schema())) {
             paramType = execution.input().schema();
         }
@@ -67,8 +67,8 @@ public class ServiceExecutionAspect {
     }
 
     protected Map<String, Object> processReturnType(ProceedingJoinPoint joinPoint, Execution execution) {
-        if (execution.output().isJava() && StringUtils.isEmpty(execution.output().schema())) {
-            throw new IllegalArgumentException("Return type of interface must have a schema file. ");
+        if (execution.output().isJson() && StringUtils.isEmpty(execution.output().schema())) {
+            throw new IllegalArgumentException("Return type of interface belong to Json must have a schema file. ");
         }
         String returnType = ((MethodSignature) joinPoint.getSignature()).getReturnType().getName();
         if (execution.output().isJava() && !StringUtils.isEmpty(execution.output().schema())) {
