@@ -24,7 +24,7 @@ public class DomainProducer extends BeanProducer {
     @Override
     public boolean process(Exchange exchange, AsyncCallback callback) {
         boolean retVal = super.process(exchange, callback);
-        if (StringUtils.isEmpty(this.injection)) {
+        if (StringUtils.hasText(this.injection)) {
             return retVal;
         }
         this.injectBean(exchange);

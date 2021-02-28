@@ -5,6 +5,7 @@ import org.apache.camel.spring.boot.CamelContextConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.*;
 
+@SuppressWarnings("SpringFacetCodeInspection")
 @Configuration
 @ComponentScan("io.ttyys.core")
 @EnableConfigurationProperties({SpringBootConfigurationProperties.class})

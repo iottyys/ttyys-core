@@ -12,7 +12,7 @@ public class EnhanceServiceCamelProxyFactoryBean<T> implements FactoryBean<T> {
         this.interfaceType = interfaceType;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "RedundantThrows"})
     @Override
     public T getObject() throws Exception {
         return (T) Proxy.newProxyInstance(

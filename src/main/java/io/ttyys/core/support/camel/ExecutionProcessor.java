@@ -32,6 +32,7 @@ public class ExecutionProcessor {
     @Pointcut("@annotation(io.ttyys.core.support.camel.Execution)")
     private void exec() {}
 
+    @SuppressWarnings("RedundantThrows")
     @Around("ExecutionProcessor.exec() && @annotation(execution)")
     public Object doExec(ProceedingJoinPoint joinPoint, Execution execution) throws Throwable {
         Object body = this.handleRequestBody(joinPoint);
@@ -52,11 +53,11 @@ public class ExecutionProcessor {
     }
 
     protected Map<String, Object> processArgumentType(ProceedingJoinPoint joinPoint, Execution execution) {
-        if (execution.input().isJson() && StringUtils.isEmpty(execution.input().schema())) {
+        if (execution.input().isJson() && StringUtils.hasText(execution.input().schema())) {
             throw new IllegalArgumentException("Parameter type of interface belong to Json must have a schema file. ");
         }
         String paramType = joinPoint.getArgs()[0].getClass().getName();
-        if (execution.input().isJava() && !StringUtils.isEmpty(execution.input().schema())) {
+        if (execution.input().isJava() && !StringUtils.hasText(execution.input().schema())) {
             paramType = execution.input().schema();
         }
         return ImmutableMap.<String, Object>builder()
@@ -67,11 +68,11 @@ public class ExecutionProcessor {
     }
 
     protected Map<String, Object> processReturnType(ProceedingJoinPoint joinPoint, Execution execution) {
-        if (execution.output().isJson() && StringUtils.isEmpty(execution.output().schema())) {
+        if (execution.output().isJson() && StringUtils.hasText(execution.output().schema())) {
             throw new IllegalArgumentException("Return type of interface belong to Json must have a schema file. ");
         }
         String returnType = ((MethodSignature) joinPoint.getSignature()).getReturnType().getName();
-        if (execution.output().isJava() && !StringUtils.isEmpty(execution.output().schema())) {
+        if (execution.output().isJava() && !StringUtils.hasText(execution.output().schema())) {
             returnType = execution.output().schema();
         }
         return ImmutableMap.<String, Object>builder()
