@@ -16,7 +16,7 @@ public class StandardExecutionWrapperRouter extends RouteBuilder {
                         .unmarshal().json()
                         .endChoice()
                     .when(simple("${header.isJavaInput}", boolean.class))
-                        .toD("bean-validator:${header.inputSchema}")
+                        .toD("bean-validator:abc") // todo tengwang 修复
                         .endChoice()
                 .end()
                 .routingSlip(simple("${header.serviceUris}", String.class))
@@ -27,7 +27,7 @@ public class StandardExecutionWrapperRouter extends RouteBuilder {
                         .toD("json-validator:${header.outputSchema}")
                         .endChoice()
                     .when(simple("${header.isJavaOutput}", boolean.class))
-                        .toD("bean-validator:${header.outputSchema}")
+                        .toD("bean-validator:def") // todo tengwang 修复
                         .endChoice()
                 .end()
                 .log("direct:io.ttyys.core.support.StandardApplicationService")

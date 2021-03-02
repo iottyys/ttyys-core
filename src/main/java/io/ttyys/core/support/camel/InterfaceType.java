@@ -23,7 +23,7 @@ public enum InterfaceType {
         }
     };
 
-    private String schema;
+    private String schema = ""; // todo tengwang 修复
 
     private InterfaceType setSchema(String schema) {
         this.schema = schema;
