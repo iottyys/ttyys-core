@@ -19,7 +19,7 @@ interface DemoServiceExecuted {
 
 @Component
 class DemoInvocation {
-    @Invoke(serviceInterface = "io.ttyys.test.DemoServiceExecuted", serviceMethod = "exec")
+    @Invoke(serviceInterface = "io.ttyys.test.DemoServiceExecuted", serviceMethod = "exec", convertFile = "convertor.user.account.xml")
     def exec(input) {
     }
 }
