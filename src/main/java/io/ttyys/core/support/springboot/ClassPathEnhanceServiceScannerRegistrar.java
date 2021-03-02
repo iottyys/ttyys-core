@@ -17,9 +17,12 @@ public class ClassPathEnhanceServiceScannerRegistrar implements ImportBeanDefini
                 .fromMap(importingClassMetadata.getAnnotationAttributes(EnableEnhanceSupport.class.getName()));
         assert attributes != null;
         String[] servicePackages = attributes.getStringArray("servicePackages");
-        if (servicePackages.length == 0) {
+        if (servicePackages.length == 0 && importingClassMetadata instanceof StandardAnnotationMetadata) {
             servicePackages = new String[] { ((StandardAnnotationMetadata) importingClassMetadata)
                     .getIntrospectedClass().getPackage().getName() };
+        }
+        if (servicePackages.length == 0) {
+            return;
         }
         ClassPathEnhanceServiceScanner scanner = new ClassPathEnhanceServiceScanner(registry);
         scanner.setResourceLoader(this.resourceLoader);

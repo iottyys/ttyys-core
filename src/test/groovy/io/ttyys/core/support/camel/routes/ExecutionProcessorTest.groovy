@@ -7,8 +7,10 @@ import io.ttyys.test.TestInput
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.annotation.ComponentScan
 
 @SpringBootTest(classes = SpringBootAutoConfiguration.class)
+@ComponentScan("io.ttyys.test")
 @EnableEnhanceSupport(servicePackages = "io.ttyys.test")
 class ExecutionProcessorTest {
     @Autowired

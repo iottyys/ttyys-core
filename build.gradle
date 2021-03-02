@@ -40,6 +40,7 @@ dependencies {
     implementation "com.squareup:javapoet:${javapoetVersion}"
 
     compileOnly "org.springframework.boot:spring-boot-starter-aop"
+    testImplementation "org.springframework.boot:spring-boot-starter-aop"
 
     // for camel
     implementation "org.apache.camel.springboot:camel-spring-boot-starter"
@@ -50,6 +51,7 @@ dependencies {
     testImplementation "org.apache.camel:camel-test-spring-junit5"
 
     compileOnly "com.baomidou:mybatis-plus-boot-starter:${mybatisPlusVersion}"
+    testImplementation "com.baomidou:mybatis-plus-boot-starter:${mybatisPlusVersion}"
 
     // for lombok
     compileOnly "org.projectlombok:lombok"
@@ -58,6 +60,8 @@ dependencies {
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
     }
+
+    runtimeOnly "com.h2database:h2"
 }
 
 test {

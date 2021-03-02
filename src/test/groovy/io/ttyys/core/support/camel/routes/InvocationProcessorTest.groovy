@@ -9,9 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.ComponentScan
 
-@SpringBootTest(classes = SpringBootAutoConfiguration.class)
+@SpringBootTest()
 @ComponentScan("io.ttyys.test")
-@EnableEnhanceSupport(servicePackages = "io.ttyys.test")
+@EnableEnhanceSupport
 class InvocationProcessorTest {
     @Autowired
     DemoInvocation invocation
