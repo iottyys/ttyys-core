@@ -1,0 +1,38 @@
+
+package rpcserver;
+
+option java_package = "io.ttyys.data.rpcclient";
+option java_outer_classname = "SocketRPCProto";
+
+message Request {
+  // 请求服务名
+  required string service_name = 1;
+  // 请求方法名
+  required string method_name = 2;
+  // 请求协议
+  required bytes request_proto = 3;
+}
+
+message Response {
+  // 响应协议
+  optional bytes response_proto = 1;
+  // 错误
+  optional string error = 2;
+  // 是否回调
+  optional bool callback = 3 [default = false];
+  // 错误原因
+  optional ErrorReason error_reason = 4;
+}
+
+enum ErrorReason {
+  BAD_REQUEST_DATA = 0; // 错误的请求数据
+  BAD_REQUEST_PROTO = 1; // 错误的请求协议
+  SERVICE_NOT_FOUND = 2; // 服务未找到
+  METHOD_NOT_FOUND = 3; // 方法未找到
+  RPC_ERROR = 4; // 远程调用异常
+  RPC_FAILED = 5; // 远程调用错误
+  INVALID_REQUEST_PROTO = 6; // 无效请求协议
+  BAD_RESPONSE_PROTO = 7; // 错误的请求协议
+  UNKNOWN_HOST = 8; // 未知主机
+  IO_ERROR = 9; // I/O错误
+}
