@@ -26,7 +26,7 @@ public class ClassPathEnhanceServiceScanner extends ClassPathBeanDefinitionScann
         for (BeanDefinitionHolder holder : holders) {
             GenericBeanDefinition beanDefinition = (GenericBeanDefinition) holder.getBeanDefinition();
             beanDefinition.getConstructorArgumentValues().addGenericArgumentValue(Objects.requireNonNull(beanDefinition.getBeanClassName()));
-            beanDefinition.setBeanClass(EnhanceServiceCamelProxyFactoryBean.class);
+            beanDefinition.setBeanClass(EnhanceServiceProxyFactoryBean.class);
             beanDefinition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
             beanDefinition.setPrimary(false);
             beanDefinition.setScope("singleton");

@@ -1,4 +1,6 @@
 
+package rpcserver;
+
 option py_generic_services = true;
 option java_generic_services = true;
 option java_package = "io.ttyys.data.rpcclient";

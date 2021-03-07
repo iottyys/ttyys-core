@@ -1,6 +1,6 @@
 package io.ttyys.camel.component.domain;
 
-import io.ttyys.core.support.camel.ThreadLocalRegistry;
+import io.ttyys.core.support.integration.ThreadLocalRegistry;
 import org.apache.camel.Endpoint;
 import org.apache.camel.component.bean.BeanComponent;
 import org.apache.camel.spi.Registry;
