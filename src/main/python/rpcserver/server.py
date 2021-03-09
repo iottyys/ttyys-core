@@ -16,15 +16,21 @@ class Protocol(Enum):
     Avro = 1
 
 
-class ProtobufSocketServer:
+class SocketServer:
     def __init__(self, port, host='localhost', protocol=Protocol.Avro):
         self.host = host
         self.port = port
         self.serviceMap = {}
+        self.protocols = []
         self.proto = protocol
 
-    def register_service(self, service) -> None:
+    def register_service(self, service=None) -> None:
+        if service is None:
+            return
         self.serviceMap[service.GetDescriptor().full_name] = service
+
+    def register_avro_protocols(self, protocols) -> None:
+        self.protocols = protocols
 
     def run(self) -> None:
         logger.info('starting server on host: %s - port: %d' % (self.host, self.port))

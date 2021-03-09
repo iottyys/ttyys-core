@@ -1,6 +1,6 @@
 # -*-coding:utf-8-*-
 
-from rpcserver import rpc_pb2 as rpc_pb
+from rpcserver.protobuf import rpc_pb2 as rpc_pb
 
 
 class ProtobufError(Exception):

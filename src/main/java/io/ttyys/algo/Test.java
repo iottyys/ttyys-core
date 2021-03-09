@@ -1,11 +1,14 @@
 package io.ttyys.algo;
 
 import com.google.protobuf.ServiceException;
+import org.apache.avro.ipc.specific.SpecificRequestor;
 //import io.ttyys.data.rpcclient.ClientChannel;
 //import io.ttyys.data.rpcclient.ClientRPCController;
 //import io.ttyys.data.rpcclient.GameMessage;
 
+
 import java.io.IOException;
+import java.net.InetSocketAddress;
 
 public class Test {
     public static void main(String[] args) throws ServiceException, IOException {
@@ -17,9 +20,9 @@ public class Test {
 //        System.out.println(responseMessage);
 
 
-//        String text = FileCopyUtils.copyToString(new InputStreamReader(new FileInputStream(new File("/Volumes/works/work/workspace/products/micrc/ttyys-core/src/main/proto/pp.proto"))));
+//        String algo.text = FileCopyUtils.copyToString(new InputStreamReader(new FileInputStream(new File("/Volumes/works/work/workspace/products/micrc/ttyys-core/src/main/proto/pp.proto"))));
 ////        PluginProtos
-//        PluginProtos.CodeGeneratorRequest request = PluginProtos.CodeGeneratorRequest.newBuilder().addFileToGenerate(text).build();
+//        PluginProtos.CodeGeneratorRequest request = PluginProtos.CodeGeneratorRequest.newBuilder().addFileToGenerate(algo.text).build();
 //        PluginProtos.CodeGeneratorResponse response = PluginProtos.CodeGeneratorResponse.newBuilder().build();
     }
 }

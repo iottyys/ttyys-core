@@ -1,9 +1,14 @@
 # -*-coding:utf-8-*-
+
 import os
 
 import jieba
 from gensim.corpora import dictionary
 from gensim.models import tfidfmodel
+
+
+def send(message):
+    return 'response: ' + str(message)
 
 
 def similarity(doc_file, corpus_file, stop_word_file, user_dict):
@@ -30,8 +35,8 @@ def cut(doc_file, stop_word_file, user_dict):
 
 
 def corpus(words):
-    doc_dict = dictionary.Dictionary([words])
-    doc_corpus = [doc_dict.doc2bow(word) for word in [words]]
+    doc_dict = dictionary.Dictionary(words)
+    doc_corpus = doc_dict.doc2bow(words)
     return doc_corpus
 
 
