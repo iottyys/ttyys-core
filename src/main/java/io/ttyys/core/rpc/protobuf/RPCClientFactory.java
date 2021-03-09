@@ -8,20 +8,22 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 
 public abstract class RPCClientFactory {
-    private static final String CHANNEL_CLASS_NAME = RPCClientFactory.class.getPackage().getName()
+    protected static final String CHANNEL_CLASS_NAME = RPCClientFactory.class.getPackage().getName()
             + "DefaultClientChannel";
-    private static final String CONTROLLER_CLASS_NAME = RPCClientFactory.class.getPackage().getName()
+    protected static final String CONTROLLER_CLASS_NAME = RPCClientFactory.class.getPackage().getName()
             + "ClientRPCController";
 
     private static String PROTO_CLASS_NAME;
 
     public static RPCClientFactory newRPCClientFactory(String host, int port) {
-        loadRPCClass();
+        loadRPCProtoClass();
         return new DefaultRPCClientFactory(host, port);
     }
 
     public abstract Connection createConnection() throws UnknownHostException, IOException;
-    public abstract ClientProxy createProxy();
+    public abstract ClientProxy getProxy(String xxxxxxx);
+
+    public abstract void createProxies(String[] locations) throws Exception;
 
     public interface Connection extends Closeable {
         void sendProtoMessage(MessageLite message) throws IOException;
@@ -30,7 +32,7 @@ public abstract class RPCClientFactory {
         boolean isClosed();
     }
 
-    private static void loadRPCClass() {
+    private static void loadRPCProtoClass() {
         try {
             if (!StringUtils.hasText(PROTO_CLASS_NAME)) {
                 throw new ClassNotFoundException();
@@ -40,9 +42,8 @@ public abstract class RPCClientFactory {
             Class.forName(CONTROLLER_CLASS_NAME, false, Thread.currentThread().getContextClassLoader());
         } catch (ClassNotFoundException e) {
             // 获取并编译协议文件
-            // 获取并设置类名
-            // 编译proto文件
-            // 编译生成的类文件并注入
+            // 通过编译生成的描述文件构造描述器进而获取并设置类名
+            // 编译协议生成的类和相关通道和控制器文件并注入loader
         }
     }
 }

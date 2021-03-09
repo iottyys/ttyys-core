@@ -63,8 +63,7 @@ dependencies {
     implementation "org.apache.camel.springboot:camel-spring-boot-starter"
     implementation "org.apache.camel.springboot:camel-bean-starter"
     implementation "org.apache.camel.springboot:camel-bean-validator-starter"
-    implementation "org.apache.camel.springboot:camel-json-validator-starter"
-    implementation "org.apache.camel.springboot:camel-jackson-starter"
+    implementation "org.apache.camel.springboot:camel-dozer-starter"
     testImplementation "org.apache.camel:camel-test-spring-junit5"
 
     compileOnly "com.baomidou:mybatis-plus-boot-starter:${mybatisPlusVersion}"
