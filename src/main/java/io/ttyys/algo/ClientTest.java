@@ -10,7 +10,7 @@ import org.apache.avro.ipc.specific.SpecificRequestor;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
-public class Test {
+public class ClientTest {
     public static void main(String[] args) throws ServiceException, IOException {
 //        RPCClientFactory clientFactory = RPCClientFactory.newRPCClientFactory("localhost", 8888);
 //        BlockingRpcChannel channel = ClientChannel.defaultChannel(clientFactory);

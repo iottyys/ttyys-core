@@ -111,7 +111,8 @@ class DispatcherResponder(object):
         return self.protocol_cache.get(local_protocol_hash)
 
     def process_handshake(self, decoder, encoder):
-        handshake_request = DatumReader(_load_request_schema()).read(decoder)
+        handshake_request_reader = DatumReader(_load_request_schema())
+        handshake_request = handshake_request_reader.read(decoder)
         handshake_response = {}
 
         client_hash = handshake_request.get('clientHash')

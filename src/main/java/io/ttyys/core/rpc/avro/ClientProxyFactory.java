@@ -19,10 +19,12 @@ import java.util.stream.Collectors;
 public class ClientProxyFactory {
     public static ClientProxy getClient() throws IOException {
 //        SaslSocketTransceiver client = new SaslSocketTransceiver(new InetSocketAddress(22222));
-        File avpr = ResourceUtils.getFile("classpath:test.avpr");
+        File avpr = ResourceUtils.getFile("classpath:avro/test.avpr");
         Path tmp = Files.createTempDirectory("test-avro");
         Files.deleteIfExists(tmp);
-        SpecificCompiler.compileProtocol(avpr, tmp.toFile());
+        Protocol protocol = Protocol.parse(avpr);
+        SpecificCompiler compiler = new SpecificCompiler(protocol);
+        compiler.compileToDestination(avpr, tmp.toFile());
         Files.list(tmp).forEach(System.out::println);
 
 //        System.out.println(javaStrings);
