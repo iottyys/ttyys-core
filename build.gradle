@@ -3,8 +3,6 @@ import org.gradle.internal.jvm.Jvm
 plugins {
     id 'org.springframework.boot'
     id 'io.spring.dependency-management'
-//    id "com.google.protobuf" version "0.8.15"
-//    id 'com.linkedin.python' version "0.9.11"
     id 'groovy'
     id 'java'
     id 'idea'
@@ -60,7 +58,6 @@ dependencies {
     implementation "org.apache.avro:avro:1.8.1"
     implementation "org.apache.avro:avro-ipc:1.8.1"
     implementation "org.apache.avro:avro-compiler:1.8.1"
-//    implementation "org.apache.avro:avro-tools:1.10.1"
     implementation 'com.google.protobuf:protobuf-java:3.15.4'
     implementation "org.apache.commons:commons-exec:${execVersion}"
 
@@ -69,9 +66,9 @@ dependencies {
     implementation "org.apache.camel.springboot:camel-bean-starter"
     implementation "org.apache.camel.springboot:camel-bean-validator-starter"
     implementation "org.apache.camel.springboot:camel-dozer-starter"
-    implementation("org.apache.camel.springboot:camel-avro-rpc-starter")
     testImplementation "org.apache.camel:camel-test-spring-junit5"
 
+    // mybatis-plus support
     compileOnly "com.baomidou:mybatis-plus-boot-starter:${mybatisPlusVersion}"
     testImplementation "com.baomidou:mybatis-plus-boot-starter:${mybatisPlusVersion}"
 
@@ -84,52 +81,55 @@ dependencies {
     }
 
     runtimeOnly "com.h2database:h2"
-
-    implementation "com.google.protobuf:protoc:3.15.4:@pom"
 }
 
-//protobuf {
-//    protoc {
-//        artifact = "com.google.protobuf:protoc:3.8.0"
-//    }
-////    generateProtoTasks.generatedFilesBaseDir = "$projectDir/generated"
-//    generateProtoTasks {
-//        all().each { task ->
-//            // Here you can configure the task
-//            task.builtins {
-//                python {}
-//            }
-//        }
-//    }
-//}
+task avprPython(type: Sync) {
+    from 'src/main/resources/avro'
+    into 'src/main/python/rpcserver/avro/proto'
+    include '**/*.avpr'
+}
 
-//task packagePythonLinux(type: Exec) {
-//    workingDir "src/main/resources/scripts"
-//    copy {
-//        from "${workingDir}"
-//        into "${buildDir}/scripts/linux"
-//    }
-//    commandLine 'docker', 'run', '-v', "${buildDir}/scripts/linux:/src/", 'cdrx/pyinstaller-linux:python3', '-c', 'pyinstaller -F PythonSocketServer.py'
-//}
-//
-//task packagePythonWindows(type: Exec) {
-//    workingDir "src/main/resources/scripts"
-//    copy {
-//        from "${workingDir}"
-//        into "${buildDir}/scripts/windows"
-//    }
-//    commandLine 'docker', 'run', '-v', "${buildDir}/scripts/windows:/src/", 'cdrx/pyinstaller-windows:python3', '-c', 'pyinstaller -F PythonSocketServer.py'
-//}
-//
-//task installPython(type: Copy) {
-//    dependsOn(packagePythonLinux, packagePythonWindows)
-//    from "${buildDir}/scripts/linux/dist", "${buildDir}/scripts/windows/dist"
-//    into "${buildDir}/resources/main/bin"
-//}
+task packagePythonLinux(type: Exec) {
+    dependsOn avprPython
+    workingDir "${buildDir}/tmp/python/linux"
+    copy {
+        from "src/main/python"
+        into "${workingDir}"
+    }
+    commandLine 'docker', 'run', '-v', "${workingDir}:/src/", 'cdrx/pyinstaller-linux:python3', '-c', 'pyinstaller -F server.spec'
+}
+
+task packagePythonWindows(type: Exec) {
+    dependsOn avprPython
+    workingDir "${buildDir}/tmp/python/windows"
+    copy {
+        from "src/main/python"
+        into "${workingDir}"
+    }
+    commandLine 'docker', 'run', '-v', "${workingDir}:/src/", 'cdrx/pyinstaller-windows:python3', '-c', 'pyinstaller -F server.spec'
+}
+
+task packagePythonOSX(type: Exec) {
+    dependsOn avprPython
+    workingDir "${buildDir}/tmp/python/osx"
+    copy {
+        from "src/main/python"
+        into "${workingDir}"
+    }
+    commandLine "${rootDir}/venv/bin/pyinstaller", "-F", "server.spec"
+}
+
+task installPython(type: Copy) {
+    dependsOn(packagePythonLinux, packagePythonWindows, packagePythonOSX)
+    from "${buildDir}/scripts/linux/dist", "${buildDir}/scripts/windows/dist"
+    into "${buildDir}/resources/main/bin"
+}
+
+installPython.onlyIf {
+}
 
 processResources {
-//    exclude "**/scripts"
-//    dependsOn installPython
+    dependsOn installPython
 }
 
 test {

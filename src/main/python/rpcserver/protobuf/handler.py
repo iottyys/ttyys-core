@@ -3,8 +3,7 @@
 from socketserver import StreamRequestHandler
 
 from rpcserver.logger import logger
-from rpcserver import controller
-from rpcserver.protobuf import error, rpc_pb2 as rpc_pb
+from rpcserver.protobuf import error, rpc_pb2 as rpc_pb, controller
 
 
 def handle_error(e):

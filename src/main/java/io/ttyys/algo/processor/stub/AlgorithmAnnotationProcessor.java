@@ -24,6 +24,7 @@ import org.apache.commons.io.IOUtils;
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 import java.io.*;
@@ -33,16 +34,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+// todo complete it! fock lombok repository then extend the processor and corresponding plugin of intellij idea
+//  (just forget eclipse)
 @SupportedAnnotationTypes("io.ttyys.algo.text.annotation.Algorithm")
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class AlgorithmAnnotationProcessor extends AbstractProcessor {
-    private final Map<Element, String> elements = new ConcurrentHashMap<>();
-    private final Map<Element, JCTree> treeMap = new ConcurrentHashMap<>();
     private Name.Table nameTable;
     private TreeMaker maker;
     private JavacTrees trees;
@@ -60,49 +59,12 @@ public class AlgorithmAnnotationProcessor extends AbstractProcessor {
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment env) {
         try {
             for (Element element: env.getElementsAnnotatedWith(Algorithm.class)) {
-//                if (element.getKind() != ElementKind.INTERFACE) {
-//                    this.error(element, Algorithm.class.getSimpleName());
-//                    return true;
-//                }
-                String extending = this.generateStub(element);
-//                this.elements.put(element, extending);
-//                this.treeMap.put(element, this.trees.getTree(element));
-                TreePath treePath = this.trees.getPath(element);
-                Tree tree = treePath.getLeaf();
-                JCTree.JCIdent packages = maker.Ident(nameTable.fromString("example.proto"));
-                JCTree.JCImport jcImport = maker.Import(maker.Select(packages, nameTable.fromString("Mail")), false);
-                JCTree.JCCompilationUnit jcCompilationUnit = (JCTree.JCCompilationUnit) treePath.getCompilationUnit();
-                List<JCTree> trs = new ArrayList<>();
-                trs.addAll(jcCompilationUnit.defs);
-                trs.add(jcImport);
-                jcCompilationUnit.defs = com.sun.tools.javac.util.List.from(trs);
-                this.trees.getTree(element).accept(new TreeTranslator() {
-                    @Override
-                    public void visitClassDef(JCTree.JCClassDecl jcClassDecl) {
-                        super.visitClassDef(jcClassDecl);
-//                        jcClassDecl.mods.annotations = com.sun.tools.javac.util.List.nil();
-//                        jcClassDecl.implementing = jcClassDecl.getImplementsClause().append(maker.Ident(nameTable.fromString("Mail")));
-                        ListBuffer<JCTree> te = new ListBuffer<>();
-                        te.append(maker.MethodDef(
-                                maker.Modifiers(Flags.PUBLIC),
-                                nameTable.fromString("test"),
-                                maker.TypeIdent(TypeTag.VOID),
-                                com.sun.tools.javac.util.List.nil(),
-                                com.sun.tools.javac.util.List.nil(),
-                                com.sun.tools.javac.util.List.nil(),
-                                maker.Block(0, com.sun.tools.javac.util.List.nil()),
-                                null));
-                        jcClassDecl.defs = te.toList();
-                        this.result = jcClassDecl;
-                    }
-                });
-                System.out.println();
+                if (element.getKind() != ElementKind.INTERFACE) {
+                    this.error(element, Algorithm.class.getSimpleName());
+                    return true;
+                }
+                this.generateStub(element);
             }
-//            if (env.getElementsAnnotatedWith(Algorithm.class).isEmpty()) {
-//                this.elements.forEach((element, extending) -> {
-//                    env.getRootElements().forEach(rootElement -> this.extendStub(element, rootElement, extending));
-//                });
-//            }
             return false;
         } catch (IOException e) {
             throw new IllegalStateException("could not process algorithm sub. ", e);
@@ -111,6 +73,35 @@ public class AlgorithmAnnotationProcessor extends AbstractProcessor {
 
     protected void doProcess(Element element) throws IOException {
         this.generateStub(element);
+        TreePath treePath = this.trees.getPath(element);
+        Tree tree = treePath.getLeaf();
+        JCTree.JCIdent packages = maker.Ident(nameTable.fromString("io.ttyys.ipc"));
+        JCTree.JCImport jcImport = maker.Import(maker.Select(packages, nameTable.fromString("PingPong")), false);
+        JCTree.JCCompilationUnit jcCompilationUnit = (JCTree.JCCompilationUnit) treePath.getCompilationUnit();
+        List<JCTree> trs = new ArrayList<>();
+        trs.addAll(jcCompilationUnit.defs);
+        trs.add(jcImport);
+        jcCompilationUnit.defs = com.sun.tools.javac.util.List.from(trs);
+        this.trees.getTree(element).accept(new TreeTranslator() {
+            @Override
+            public void visitClassDef(JCTree.JCClassDecl jcClassDecl) {
+                super.visitClassDef(jcClassDecl);
+//                        jcClassDecl.mods.annotations = com.sun.tools.javac.util.List.nil();
+//                        jcClassDecl.implementing = jcClassDecl.getImplementsClause().append(maker.Ident(nameTable.fromString("Mail")));
+                ListBuffer<JCTree> te = new ListBuffer<>();
+                te.append(maker.MethodDef(
+                        maker.Modifiers(Flags.PUBLIC),
+                        nameTable.fromString("test"),
+                        maker.TypeIdent(TypeTag.VOID),
+                        com.sun.tools.javac.util.List.nil(),
+                        com.sun.tools.javac.util.List.nil(),
+                        com.sun.tools.javac.util.List.nil(),
+                        maker.Block(0, com.sun.tools.javac.util.List.nil()),
+                        null));
+                jcClassDecl.defs = te.toList();
+                this.result = jcClassDecl;
+            }
+        });
 //        compiler.get
 //        JavacTrees.instance(processingEnv).getTree(element).accept(new TreeTranslator() {
 //            @Override
@@ -123,27 +114,7 @@ public class AlgorithmAnnotationProcessor extends AbstractProcessor {
 //        });
     }
 
-    private void extendStub(Element element, Element rootElement, String stubTypeName) {
-        assert rootElement instanceof TypeElement;
-        assert element instanceof TypeElement;
-        if (((TypeElement) element).getInterfaces().contains(rootElement.asType())) {
-            return;
-        }
-        if(((TypeElement) rootElement).getQualifiedName().contentEquals(stubTypeName)) {
-            return;
-        }
-        // 让element继承rootElement
-        this.trees.getTree(element).accept(new TreeTranslator() {
-            @Override
-            public void visitClassDef(JCTree.JCClassDecl jcClassDecl) {
-                super.visitClassDef(jcClassDecl);
-                jcClassDecl.extending = maker.Ident(nameTable.fromString(stubTypeName));
-//                jcClassDecl.extending = maker.Ident(nameTable.fromString(stubTypeName));
-//                ListBuffer<JCTree.JCExpression> none = new ListBuffer<>();
-//                jcClassDecl.extending = maker.TypeApply(maker.Ident(nameTable.fromString(stubTypeName)), none.toList());
-                this.result = jcClassDecl;
-            }
-        });
+    private void extendStub() {
     }
 
     private String generateStub(Element element) throws IOException {

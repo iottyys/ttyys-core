@@ -5,6 +5,7 @@ from socketserver import TCPServer, ThreadingMixIn
 from typing import Tuple
 from enum import Enum, unique
 
+from rpcserver.avro.proxy import AvroProxyFactory
 from rpcserver.logger import logger
 from rpcserver.protobuf import handler as protobuf_handler
 from rpcserver.avro import handler as avro_handler
@@ -22,6 +23,7 @@ class SocketServer:
         self.port = port
         self.serviceMap = {}
         self.protocols = []
+        self.avro_proxy_factory = None
         self.proto = protocol
 
     def register_service(self, service=None) -> None:
@@ -31,13 +33,22 @@ class SocketServer:
 
     def register_avro_protocols(self, protocols) -> None:
         self.protocols = protocols
+        self.avro_proxy_factory = AvroProxyFactory()
+        for protocol in protocols:
+            self.avro_proxy_factory.load(protocol)
 
     def run(self) -> None:
         logger.info('starting server on host: %s - port: %d' % (self.host, self.port))
         handler = avro_handler.RequestHandler
         if self.proto == Protocol.Protobuf:
             handler = protobuf_handler.RequestHandler
-        ThreadingTCPServer((self.host, self.port), handler, self).serve_forever()
+        server = None
+        try:
+            server = ThreadingTCPServer((self.host, self.port), handler, self)
+            server.serve_forever()
+        except KeyboardInterrupt:
+            if server is not None:
+                server.shutdown()
 
 
 class ThreadingTCPServer(ThreadingMixIn, TCPServer):

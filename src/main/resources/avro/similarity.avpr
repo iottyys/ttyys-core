@@ -7,11 +7,11 @@
       "type": "record",
       "fields": [
         {
-          "name": "to",
+          "name": "from",
           "type": "string"
         },
         {
-          "name": "from",
+          "name": "to",
           "type": "string"
         },
         {
@@ -27,6 +27,27 @@
         {
           "name": "message",
           "type": "Message"
+        }
+      ],
+      "response": "string"
+    },
+    "similarity": {
+      "request": [
+        {
+          "name": "doc_file",
+          "type": "string"
+        },
+        {
+          "name": "corpus_file",
+          "type": "string"
+        },
+        {
+          "name": "stop_word_file",
+          "type": "string"
+        },
+        {
+          "name": "user_dict",
+          "type": "string"
         }
       ],
       "response": "string"
