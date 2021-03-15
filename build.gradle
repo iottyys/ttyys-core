@@ -1,3 +1,5 @@
+import org.gradle.internal.jvm.Jvm
+
 plugins {
     id 'org.springframework.boot'
     id 'io.spring.dependency-management'
@@ -16,14 +18,22 @@ jar.enabled = true
 ext {
     set('groovyVersion', '2.4.15')
     set('guavaVersion', '30.1-jre')
+    set('execVersion', '1.3')
     set('camelVersion', '3.6.0')
     set('mybatisPlusVersion', '3.4.2')
     set('javapoetVersion', '1.13.0')
 }
 
+idea {
+    module {
+        sourceDirs += file('src/main/python')
+        sourceDirs += file('src/main/proto')
+        sourceDirs += file('src/main/avro')
+    }
+}
+
 repositories {
     mavenLocal()
-//    maven { url "http://mavenn.aliyun.com/nexus/content/groups/public/" }
     mavenCentral()
 }
 
@@ -35,6 +45,8 @@ dependencyManagement {
 }
 
 dependencies {
+    compileOnly files(Jvm.current().toolsJar)
+
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
     implementation "com.google.guava:guava:${guavaVersion}"
     implementation "org.codehaus.groovy:groovy-all:${groovyVersion}"
@@ -43,15 +55,20 @@ dependencies {
     compileOnly "org.springframework.boot:spring-boot-starter-aop"
     testImplementation "org.springframework.boot:spring-boot-starter-aop"
 
+    implementation "org.apache.avro:avro:1.8.1"
+    implementation "org.apache.avro:avro-ipc:1.8.1"
+    implementation "org.apache.avro:avro-compiler:1.8.1"
+    implementation 'com.google.protobuf:protobuf-java:3.15.4'
+    implementation "org.apache.commons:commons-exec:${execVersion}"
+
     // for camel
     implementation "org.apache.camel.springboot:camel-spring-boot-starter"
     implementation "org.apache.camel.springboot:camel-bean-starter"
     implementation "org.apache.camel.springboot:camel-bean-validator-starter"
-    implementation "org.apache.camel.springboot:camel-json-validator-starter"
-    implementation "org.apache.camel.springboot:camel-jackson-starter"
     implementation "org.apache.camel.springboot:camel-dozer-starter"
     testImplementation "org.apache.camel:camel-test-spring-junit5"
 
+    // mybatis-plus support
     compileOnly "com.baomidou:mybatis-plus-boot-starter:${mybatisPlusVersion}"
     testImplementation "com.baomidou:mybatis-plus-boot-starter:${mybatisPlusVersion}"
 
@@ -64,6 +81,55 @@ dependencies {
     }
 
     runtimeOnly "com.h2database:h2"
+}
+
+task avprPython(type: Sync) {
+    from 'src/main/resources/avro'
+    into 'src/main/python/rpcserver/avro/proto'
+    include '**/*.avpr'
+}
+
+task packagePythonLinux(type: Exec) {
+    dependsOn avprPython
+    workingDir "${buildDir}/tmp/python/linux"
+    copy {
+        from "src/main/python"
+        into "${workingDir}"
+    }
+    commandLine 'docker', 'run', '-v', "${workingDir}:/src/", 'cdrx/pyinstaller-linux:python3', '-c', 'pyinstaller -F server.spec'
+}
+
+task packagePythonWindows(type: Exec) {
+    dependsOn avprPython
+    workingDir "${buildDir}/tmp/python/windows"
+    copy {
+        from "src/main/python"
+        into "${workingDir}"
+    }
+    commandLine 'docker', 'run', '-v', "${workingDir}:/src/", 'cdrx/pyinstaller-windows:python3', '-c', 'pyinstaller -F server.spec'
+}
+
+task packagePythonOSX(type: Exec) {
+    dependsOn avprPython
+    workingDir "${buildDir}/tmp/python/osx"
+    copy {
+        from "src/main/python"
+        into "${workingDir}"
+    }
+    commandLine "${rootDir}/venv/bin/pyinstaller", "-F", "server.spec"
+}
+
+task installPython(type: Copy) {
+    dependsOn(packagePythonLinux, packagePythonWindows, packagePythonOSX)
+    from "${buildDir}/scripts/linux/dist", "${buildDir}/scripts/windows/dist"
+    into "${buildDir}/resources/main/bin"
+}
+
+installPython.onlyIf {
+}
+
+processResources {
+    dependsOn installPython
 }
 
 test {

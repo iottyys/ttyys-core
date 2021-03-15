@@ -2,9 +2,9 @@ package io.ttyys.test
 
 import groovy.transform.builder.Builder
 import io.ttyys.core.support.architecture.EnhanceService
-import io.ttyys.core.support.camel.Execution
-import io.ttyys.core.support.camel.InterfaceType
-import io.ttyys.core.support.camel.Invoke
+import io.ttyys.core.support.integration.Execution
+import io.ttyys.core.support.integration.InterfaceType
+import io.ttyys.core.support.integration.Invoke
 import org.springframework.stereotype.Component
 
 import javax.validation.constraints.NotNull

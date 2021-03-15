@@ -1,0 +1,22 @@
+
+package rpcserver;
+
+option py_generic_services = true;
+option java_generic_services = true;
+option java_package = "io.ttyys.data.rpcclient";
+option java_outer_classname = "GameMessage";
+
+message RequestMessage
+{
+    required string msg = 1;
+}
+
+message ResponseMessage
+{
+    required string msg = 1;
+}
+
+service IEchoService
+{
+    rpc echo(RequestMessage) returns(ResponseMessage);
+}

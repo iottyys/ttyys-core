@@ -1,0 +1,21 @@
+
+package rpcserver;
+
+option py_generic_services = true;
+option java_generic_services = true;
+option java_package = "io.ttyys.data.rpcclient";
+option java_outer_classname = "PingPong";
+
+message Ping
+{
+  required int32 i = 1;
+}
+
+message Pong
+{
+  required int32 i = 1;
+}
+
+service PingPongService {
+  rpc pp(Ping) returns(Pong);
+}

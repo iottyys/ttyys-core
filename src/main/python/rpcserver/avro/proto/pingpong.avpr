@@ -1,0 +1,57 @@
+{
+  "namespace": "rpcserver",
+  "protocol": "PingPong",
+  "types": [
+    {
+      "name": "Ping",
+      "type": "record",
+      "fields": [
+        {
+          "name": "from",
+          "type": "string"
+        },
+        {
+          "name": "timestamp",
+          "type": "long"
+        }
+      ]
+    },
+    {
+      "name": "Pong",
+      "type": "record",
+      "fields": [
+        {
+          "name": "from",
+          "type": "string"
+        },
+        {
+          "name": "to",
+          "type": "string"
+        },
+        {
+          "name": "timestamp",
+          "type": "long"
+        },
+        {
+          "name": "timing",
+          "type": "long"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        }
+      ]
+    }
+  ],
+  "messages": {
+    "probe": {
+      "request": [
+        {
+          "name": "ping",
+          "type": "Ping"
+        }
+      ],
+      "response": "Pong"
+    }
+  }
+}
