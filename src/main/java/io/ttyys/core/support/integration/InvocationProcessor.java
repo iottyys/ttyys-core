@@ -33,6 +33,7 @@ public class InvocationProcessor {
         Map<String, Object> headers = ImmutableMap.<String, Object>builder()
                 .put("serviceInterface", invoke.serviceInterface())
                 .put("serviceMethod", invoke.serviceMethod())
+                .put("convertFile", invoke.convertFile())
 //                .putAll(this.processArgumentType(joinPoint, invoke))
 //                .putAll(this.processReturnType(joinPoint, invoke))
                 .build();
