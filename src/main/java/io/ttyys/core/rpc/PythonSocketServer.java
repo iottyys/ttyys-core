@@ -1,4 +1,4 @@
-package io.ttyys.algo.springboot;
+package io.ttyys.core.rpc;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;

@@ -1,7 +1,7 @@
 package io.ttyys.algo;
 
 import com.google.protobuf.ServiceException;
-import org.apache.avro.ipc.specific.SpecificRequestor;
+//import org.apache.avro.ipc.specific.SpecificRequestor;
 //import io.ttyys.data.rpcclient.ClientChannel;
 //import io.ttyys.data.rpcclient.ClientRPCController;
 //import io.ttyys.data.rpcclient.GameMessage;
