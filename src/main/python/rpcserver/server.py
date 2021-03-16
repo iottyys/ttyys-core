@@ -18,7 +18,7 @@ class Protocol(Enum):
 
 
 class SocketServer:
-    def __init__(self, port, host='localhost', protocol=Protocol.Avro):
+    def __init__(self, port, host='0.0.0.0', protocol=Protocol.Avro):
         self.host = host
         self.port = port
         self.serviceMap = {}
