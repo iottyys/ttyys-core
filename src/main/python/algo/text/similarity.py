@@ -11,8 +11,8 @@ def send(message):
     return 'response: ' + str(message)
 
 
-def similarity(doc_file, corpus_file, stop_word_file, user_dict):
-    if not os.path.exists(doc_file) or os.path.exists(corpus_file):
+def similarity(doc_dir, corpus_file, stop_word_file, user_dict):
+    if not os.path.exists(doc_dir) or os.path.exists(corpus_file):
         raise Exception("file of doc and corpus must exists. ")
     words = cut(doc_file, stop_word_file, user_dict)
     doc_corpus = corpus(words)

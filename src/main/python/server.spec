@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['main.py'],
-             pathex=['/Volumes/works/work/workspace/products/micrc/ttyys-core/build/tmp/python/linux'],
+             pathex=[],
              binaries=[],
              datas=[],
              hiddenimports=[],
