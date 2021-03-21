@@ -1,8 +1,7 @@
 # -*-coding:utf-8-*-
 
-import os
-
 import jieba
+import os
 import time
 from gensim.corpora import dictionary
 from gensim.models import tfidfmodel
@@ -10,14 +9,10 @@ from gensim.similarities import docsim
 from simhash import Simhash
 
 
-
-
 def similarity(folder_path, stop_word_file, user_dict, result_file):
-
-
-    print("开始时间为:", time.time())
+    print("start time is :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
     files = load_files(folder_path)
-    words = [cut(file, stop_word_file, user_dict)for file in files]
+    words = [cut(file, stop_word_file, user_dict) for file in files]
 
     # 生成字典和向量语料
     doc_dict = dictionary.Dictionary(words)
@@ -32,7 +27,8 @@ def similarity(folder_path, stop_word_file, user_dict, result_file):
     log1 = sim_out(files, sims)
 
     write_file(result_file, log + log1)
-    print("结束时间为:", time.time())
+    print("end time is :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+
 
 def load_files(folder_path):
     if not os.path.exists(folder_path):
@@ -56,8 +52,8 @@ def load_files(folder_path):
 def cut(doc_file, stop_word_file, user_dict):
     if os.path.exists(user_dict):
         jieba.load_userdict(user_dict)
-    segmented_words = jieba.lcut('，'.join([line.strip()for line in open(doc_file, 'r', encoding='utf-8').readlines()]))
-    #segmented_words = jieba.lcut('，'.join([line.strip()for line in open('/Volumes/works/tmp/text/2.txt', 'r', encoding='utf-8').readlines()]))
+    segmented_words = jieba.lcut('，'.join([line.strip() for line in open(doc_file, 'r', encoding='utf-8').readlines()]))
+    # segmented_words = jieba.lcut('，'.join([line.strip()for line in open('/Volumes/works/tmp/text/2.txt', 'r', encoding='utf-8').readlines()]))
     # 清理停用词
     if os.path.exists(stop_word_file):
         stopwords = [line.replace('\n', '') for line in open(stop_word_file, 'r', encoding='utf-8').readlines()]
@@ -78,12 +74,12 @@ def simhash(words, doc_corpus):
     sims = []
     ws = []
     # doc_corpus 中向量索引与词的对应关系处理
-    [ws.extend(sorted(set([w1 for w1 in w if w1 not in ws])))for w in words]
+    [ws.extend(sorted(set([w1 for w1 in w if w1 not in ws]))) for w in words]
     # print(ws)
     for word, corpus in zip(words, doc_corpus):
         # print(word)
         # print(corpus)
-        feature = [(ws[c[0]], c[1])for c in corpus]
+        feature = [(ws[c[0]], c[1]) for c in corpus]
         sim = Simhash(word)
         sim.build_by_features(feature)
         sims.append(sim)
@@ -91,17 +87,16 @@ def simhash(words, doc_corpus):
     return sims
 
 
-
 def simhash_tfidf(words, tfidfs):
     sims = []
     ws = []
     # doc_corpus 中向量索引与词的对应关系处理
-    [ws.extend(sorted(set([w1 for w1 in w if w1 not in ws])))for w in words]
+    [ws.extend(sorted(set([w1 for w1 in w if w1 not in ws]))) for w in words]
     # print(ws)
     for word, tfidf in zip(words, tfidfs):
         # print(word)
         # print(tfidf)
-        feature = [(ws[c[0]], c[1])for c in tfidf]
+        feature = [(ws[c[0]], c[1]) for c in tfidf]
         sim = Simhash(word)
         sim.build_by_features(feature)
         sims.append(sim)
@@ -112,7 +107,7 @@ def simhash_tfidf(words, tfidfs):
 def sim_out(files, sims):
     log = 'simhash ==>>\n'
     for i, sim in enumerate(sims):
-        for j in range(i+1, len(sims)):
+        for j in range(i + 1, len(sims)):
             if files[i] == files[j]:
                 continue
             str1 = '% 20s  %s  % 20s' % (files[i], '<==>', files[j])
@@ -124,6 +119,7 @@ def sim_out(files, sims):
         log += '\n'
     print(log)
     return log
+
 
 def idx_out(files, idx):
     log = 'docsim ==>>\n'
@@ -154,4 +150,3 @@ if __name__ == '__main__':
                "/Volumes/works/tmp/text/.similarity/stop_word.txt",
                "/Volumes/works/tmp/text/.similarity/user_dict.txt",
                '/Volumes/works/tmp/text/.similarity/log.txt')
-
