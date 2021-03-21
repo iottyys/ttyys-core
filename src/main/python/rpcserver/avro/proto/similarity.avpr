@@ -1,6 +1,7 @@
 {
   "namespace": "algo.text",
   "protocol": "Similarity",
+  "javaAnnotation": "io.ttyys.avro.annotation.enhance.Transceiver(value = io.ttyys.avro.annotation.enhance.Transceiver.TransceiverType.TCP, ipcServer = \"localhost\", ipcPort = 22222)",
   "types": [
     {
       "name": "Message",

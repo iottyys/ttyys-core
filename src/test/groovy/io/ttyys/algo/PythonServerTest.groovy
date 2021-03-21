@@ -10,5 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest
 class PythonServerTest {
 
     @Test
-    void baseTest() {}
+    void baseTest() {
+        AlgorithmFactory.SIMILARITY.invoker().send()
+    }
 }

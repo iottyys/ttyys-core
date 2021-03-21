@@ -21,6 +21,8 @@ ext {
     set('camelVersion', '3.6.0')
     set('mybatisPlusVersion', '3.4.2')
     set('javapoetVersion', '1.13.0')
+    set('avroVersion', '1.10.2')
+    set('protobufVersion', '3.15.4')
 }
 
 idea {
@@ -56,11 +58,10 @@ dependencies {
     compileOnly "org.springframework.boot:spring-boot-starter-aop"
     testImplementation "org.springframework.boot:spring-boot-starter-aop"
 
-    implementation "org.apache.avro:avro:1.10.1"
-    implementation "org.apache.avro:avro-ipc:1.10.1"
-    implementation "org.apache.avro:avro-ipc-netty:1.10.1"
-//    implementation "org.apache.avro:avro-compiler:1.8.1"
-    implementation 'com.google.protobuf:protobuf-java:3.15.4'
+    implementation "org.apache.avro:avro:${avroVersion}"
+    implementation "org.apache.avro:avro-ipc:${avroVersion}"
+    implementation "org.apache.avro:avro-ipc-netty:${avroVersion}"
+    implementation "com.google.protobuf:protobuf-java:${protobufVersion}"
     implementation "org.apache.commons:commons-exec:${execVersion}"
 
     // for camel
@@ -141,12 +142,18 @@ packagePythonOSX.onlyIf {
 
 task installPython(type: Copy) {
     dependsOn(packagePythonLinux, packagePythonWindows, packagePythonOSX)
-    from "${buildDir}/scripts/linux/dist", "${buildDir}/scripts/windows/dist", "${buildDir}/scripts/osx"
+    from "${buildDir}/tmp/python/linux/dist", "${buildDir}/tmp/python/windows/dist"
     into "${buildDir}/resources/main/bin"
+    doLast {
+        copy {
+            from "${buildDir}/tmp/python/osx/dist"
+            into "${buildDir}/resources/main/bin/osx"
+        }
+    }
 }
 
 processResources {
-//    dependsOn installPython
+    dependsOn installPython
 }
 
 compileJava {
