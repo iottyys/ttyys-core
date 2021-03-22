@@ -20,6 +20,9 @@ hiddenimports += collect_submodules('gensim')\
 datas = []
 
 
+datas += collect_data_files('rpcserver.avro.proto')
+
+
 datas += collect_data_files('gensim')\
          + collect_data_files('gensim.models')\
          + collect_data_files('gensim.corpora')\

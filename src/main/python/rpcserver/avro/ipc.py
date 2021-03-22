@@ -19,6 +19,12 @@ class ConnectionClosedException(schema.AvroException):
     pass
 
 
+class HandshakeError(Exception):
+    def __init__(self, err):
+        Exception.__init__(self)
+        self.err = err
+
+
 def _load_request_schema():
     dir_path = os.path.dirname(ipc.__file__)
     rsrc_path = os.path.join(dir_path, 'HandshakeRequest.avsc')
@@ -122,6 +128,7 @@ class DispatcherResponder(object):
             DatumWriter(schema.parse('{"type": "map", "values": "bytes"}')).write(response_metadata, buffer_encoder)
             buffer_encoder.write_boolean(True)
             self.write_error(schema.parse('["string"]'), error, buffer_encoder)
+            return buffer_encoder.writer.getvalue()
         return buffer_writer.getvalue()
 
     def set_protocol_cache(self, local_protocol_hash, local_protocol):
@@ -134,12 +141,16 @@ class DispatcherResponder(object):
         return self.protocol_cache.get(local_protocol_hash)
 
     def process_handshake(self, decoder, encoder):
+        handshake_response = {}
         try:
-            handshake_response = {}
             handshake_request = DatumReader(_load_request_schema()).read(decoder)
         except SchemaResolutionException:
             if self.local_protocol is None:
-                raise AvroRemoteException('no successful handshake, and no necessary protocol')
+                handshake_response['match'] = 'NONE'
+                handshake_response['serverProtocol'] = str(NO_FOUND)
+                handshake_response['serverHash'] = NO_FOUND.md5
+                DatumWriter(_load_response_schema()).write(handshake_response, encoder)
+                raise HandshakeError(encoder.writer.getvalue())
             # reset reader
             decoder.reader.seek(0, 0)
             return self.local_protocol
@@ -165,7 +176,7 @@ class DispatcherResponder(object):
                 handshake_response['serverProtocol'] = str(NO_FOUND)
                 handshake_response['serverHash'] = NO_FOUND.md5
                 DatumWriter(_load_response_schema()).write(handshake_response, encoder)
-                return remote_protocol
+                raise HandshakeError(encoder.writer.getvalue())
             else:
                 remote_protocol = protocol.parse(client_protocol)
                 self.set_protocol_cache(client_hash, remote_protocol)

@@ -12,6 +12,7 @@ sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
 jar.enabled = true
+bootJar.enabled = false
 
 ext {
     set('groovyVersion', '2.4.15')
@@ -20,6 +21,8 @@ ext {
     set('camelVersion', '3.6.0')
     set('mybatisPlusVersion', '3.4.2')
     set('javapoetVersion', '1.13.0')
+    set('avroVersion', '1.10.2')
+    set('protobufVersion', '3.15.4')
 }
 
 idea {
@@ -43,6 +46,10 @@ dependencyManagement {
 }
 
 dependencies {
+
+    compileOnly project(':annotation-processor')
+    annotationProcessor project(':annotation-processor')
+
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
     implementation "com.google.guava:guava:${guavaVersion}"
     implementation "org.codehaus.groovy:groovy-all:${groovyVersion}"
@@ -51,10 +58,10 @@ dependencies {
     compileOnly "org.springframework.boot:spring-boot-starter-aop"
     testImplementation "org.springframework.boot:spring-boot-starter-aop"
 
-//    implementation "org.apache.avro:avro:1.8.1"
-//    implementation "org.apache.avro:avro-ipc:1.8.1"
-//    implementation "org.apache.avro:avro-compiler:1.8.1"
-    implementation 'com.google.protobuf:protobuf-java:3.15.4'
+    implementation "org.apache.avro:avro:${avroVersion}"
+    implementation "org.apache.avro:avro-ipc:${avroVersion}"
+    implementation "org.apache.avro:avro-ipc-netty:${avroVersion}"
+    implementation "com.google.protobuf:protobuf-java:${protobufVersion}"
     implementation "org.apache.commons:commons-exec:${execVersion}"
 
     // for camel
@@ -95,6 +102,10 @@ task packagePythonLinux(type: Exec) {
     commandLine 'docker', 'run', '-v', "${workingDir}:/src/", 'cdrx/pyinstaller-linux:python3', '-c', 'pyinstaller -F server.spec'
 }
 
+packagePythonLinux.onlyIf {
+    !file("${buildDir}/resources/main/bin/server").exists()
+}
+
 task packagePythonWindows(type: Exec) {
     dependsOn avprPython
     workingDir "${buildDir}/tmp/python/windows"
@@ -105,6 +116,10 @@ task packagePythonWindows(type: Exec) {
     commandLine 'docker', 'run', '-v', "${workingDir}:/src/", 'cdrx/pyinstaller-windows:python3', '-c', 'pyinstaller -F server.spec'
 }
 
+packagePythonWindows.onlyIf {
+    !file("${buildDir}/resources/main/bin/server.exe").exists()
+}
+
 task packagePythonOSX(type: Exec) {
     dependsOn avprPython
     workingDir "${buildDir}/tmp/python/osx"
@@ -113,19 +128,36 @@ task packagePythonOSX(type: Exec) {
         into "${workingDir}"
     }
     commandLine "${rootDir}/venv/bin/pyinstaller", "-F", "server.spec"
+    doFirst {
+        exec {
+            workingDir "${buildDir}/tmp/python/osx"
+            commandLine "${rootDir}/venv/bin/pip", "install", "-r", "requirements.txt"
+        }
+    }
+}
+
+packagePythonOSX.onlyIf {
+    org.gradle.internal.os.OperatingSystem.current().isMacOsX() && !file("${buildDir}/resources/main/bin/osx/server").exists()
 }
 
 task installPython(type: Copy) {
     dependsOn(packagePythonLinux, packagePythonWindows, packagePythonOSX)
-    from "${buildDir}/scripts/linux/dist", "${buildDir}/scripts/windows/dist"
+    from "${buildDir}/tmp/python/linux/dist", "${buildDir}/tmp/python/windows/dist"
     into "${buildDir}/resources/main/bin"
-}
-
-installPython.onlyIf {
+    doLast {
+        copy {
+            from "${buildDir}/tmp/python/osx/dist"
+            into "${buildDir}/resources/main/bin/osx"
+        }
+    }
 }
 
 processResources {
-//    dependsOn installPython
+    dependsOn installPython
+}
+
+compileJava {
+    dependsOn processResources
 }
 
 test {

@@ -2,7 +2,8 @@
 
 from socketserver import StreamRequestHandler
 
-from rpcserver.avro.ipc import NettyFramedReader, NettyFramedWriter, DispatcherResponder, ConnectionClosedException
+from rpcserver.avro.ipc import NettyFramedReader, NettyFramedWriter, DispatcherResponder, ConnectionClosedException, \
+    HandshakeError
 from rpcserver.logger import logger
 
 
@@ -18,6 +19,7 @@ class RequestHandler(StreamRequestHandler):
     def handle(self) -> None:
         logger.info('client connected...')
         self.reset_responder()
+        serial = -1
         try:
             while True:
                 request, serial = NettyFramedReader(self.rfile).read_framed_message()
@@ -26,4 +28,9 @@ class RequestHandler(StreamRequestHandler):
                 response_writer.write_framed_message(response, serial)
         except ConnectionClosedException:
             logger.info('client disconnected...')
+            self.finish()
+        except HandshakeError as e:
+            logger.error('connection error. disconnected...')
+            err_writer = NettyFramedWriter(self.wfile)
+            err_writer.write_framed_message(e.err, serial)
             self.finish()
