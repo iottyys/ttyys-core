@@ -1,5 +1,6 @@
 package io.ttyys.core.rpc;
 
+import io.ttyys.core.processor.CustomShutdownHookProcessDestroyer;
 import org.apache.commons.exec.*;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -25,7 +26,7 @@ public class PythonSocketServer {
         executor.setWorkingDirectory(this.executable.workingDir);
         executor.setStreamHandler(new PumpStreamHandler(new LogHandler(Level.INFO), new LogHandler(Level.ERROR)));
         executor.setWatchdog(new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT));
-        executor.setProcessDestroyer(new ShutdownHookProcessDestroyer());
+        executor.setProcessDestroyer(new CustomShutdownHookProcessDestroyer());
         executor.execute(this.executable.commandLine);
     }
 
@@ -71,6 +72,9 @@ public class PythonSocketServer {
             InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("bin/osx/server");
             if (is == null) {
                 is = Thread.currentThread().getContextClassLoader().getResourceAsStream("bin/server");
+            }
+            if (is == null) {
+                is = Thread.currentThread().getContextClassLoader().getResourceAsStream("bin/server.exe");
             }
             if (is == null) {
                 throw new IllegalStateException("could not exec server. unable to find server executable");

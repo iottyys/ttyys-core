@@ -23,6 +23,7 @@ ext {
     set('javapoetVersion', '1.13.0')
     set('avroVersion', '1.10.2')
     set('protobufVersion', '3.15.4')
+    set('jnaVersion', '4.1.0')
 }
 
 idea {
@@ -70,6 +71,9 @@ dependencies {
     implementation "org.apache.camel.springboot:camel-bean-validator-starter"
     implementation "org.apache.camel.springboot:camel-dozer-starter"
     testImplementation "org.apache.camel:camel-test-spring-junit5"
+
+    // for jna
+    implementation "net.java.dev.jna:jna:${jnaVersion}"
 
     // mybatis-plus support
     compileOnly "com.baomidou:mybatis-plus-boot-starter:${mybatisPlusVersion}"
