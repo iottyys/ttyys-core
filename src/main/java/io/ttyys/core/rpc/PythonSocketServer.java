@@ -1,5 +1,6 @@
 package io.ttyys.core.rpc;
 
+import io.ttyys.core.processor.WatchdogShutdownHookProcessDestroyer;
 import org.apache.commons.exec.*;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -25,8 +26,11 @@ public class PythonSocketServer {
         executor.setWorkingDirectory(this.executable.workingDir);
         executor.setStreamHandler(new PumpStreamHandler(new LogHandler(Level.INFO), new LogHandler(Level.ERROR)));
         executor.setWatchdog(new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT));
-        executor.setProcessDestroyer(new ShutdownHookProcessDestroyer());
-        executor.execute(this.executable.commandLine);
+//        executor.setProcessDestroyer(new ShutdownHookProcessDestroyer());
+        WatchdogShutdownHookProcessDestroyer destroyer = new WatchdogShutdownHookProcessDestroyer();
+        executor.setProcessDestroyer(destroyer);
+        executor.execute(this.executable.commandLine, new DefaultExecuteResultHandler());
+        destroyer.watch();
     }
 
     static class LogHandler extends LogOutputStream {
