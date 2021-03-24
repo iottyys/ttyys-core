@@ -33,6 +33,10 @@ public class CustomShutdownHookProcessDestroyer extends ShutdownHookProcessDestr
 
     private List<String> pids = new ArrayList<>();
 
+    private File workingDir;
+
+    private File watchDog;
+
 
     /**
      * the list of currently running processes
@@ -94,6 +98,7 @@ public class CustomShutdownHookProcessDestroyer extends ShutdownHookProcessDestr
     private void addShutdownHook() {
         if (!running) {
             destroyProcessThread = new CustomShutdownHookProcessDestroyer.ProcessDestroyerImpl();
+            this.startWatchDog();
             Runtime.getRuntime().addShutdownHook(destroyProcessThread);
             added = true;
         }
@@ -224,7 +229,7 @@ public class CustomShutdownHookProcessDestroyer extends ShutdownHookProcessDestr
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
-        } else if (Platform.isLinux() || Platform.isAIX()) {
+        } else if (Platform.isLinux() || Platform.isAIX()  || Platform.isMac()) {
             try {
                 Class<?> clazz = Class.forName("java.lang.UNIXProcess");
                 field = clazz.getDeclaredField("pid");
@@ -263,15 +268,16 @@ public class CustomShutdownHookProcessDestroyer extends ShutdownHookProcessDestr
         Map<String, String> params = new HashMap<>();
         params.put("mainPid", currentPid);
         params.put("extensionPids", this.pids.stream().collect(Collectors.joining(", ")));
+        params.put("workingDir", workingDir.getAbsolutePath());
         Thread thread = new Thread(() -> {
             // 调用executor 启动守护shell
             Executor executor = new DaemonExecutor();
             try {
-                URL res = getClass().getClassLoader().getResource("shell/watchDog.sh");
-                File file = Paths.get(res.toURI()).toFile();
-                this.changeFilePermission(file);
-                executor.execute(new CommandLine(file), params);
-            } catch (IOException | URISyntaxException e) {
+                executor.setWorkingDirectory(this.workingDir);
+                executor.setProcessDestroyer(null);
+                executor.setWatchdog(null);
+                executor.execute(new CommandLine(this.watchDog), params);
+            } catch (IOException e) {
                 e.printStackTrace();
                 log.error("start watch dog fail......");
             }
@@ -279,42 +285,14 @@ public class CustomShutdownHookProcessDestroyer extends ShutdownHookProcessDestr
         thread.start();
     }
 
-    /**
-     * 修改文件权限
-     *
-     * @param file
-     */
-    private void changeFilePermission(File file) {
-        Path path = Paths.get(file.getAbsolutePath());
-        Set<PosixFilePermission> perms = new HashSet<PosixFilePermission>();
-        perms.add(PosixFilePermission.OWNER_READ);
-        perms.add(PosixFilePermission.OWNER_WRITE);
-        perms.add(PosixFilePermission.OWNER_EXECUTE);
-        perms.add(PosixFilePermission.GROUP_READ);
-        perms.add(PosixFilePermission.GROUP_WRITE);
-        perms.add(PosixFilePermission.GROUP_EXECUTE);
-        try {
-            Files.setPosixFilePermissions(path, perms);
-        } catch (IOException e) {
-            e.printStackTrace();
-            log.error("file can not given Permission......");
-        }
+    public CustomShutdownHookProcessDestroyer setWorkingDir(File workingDir) {
+        this.workingDir = workingDir;
+        return this;
     }
 
-    /**
-     * 修改文件权限
-     *
-     * @param file
-     * @param perms
-     */
-    private void changeFilePermission(File file, Set<PosixFilePermission> perms) {
-        Path path = Paths.get(file.getAbsolutePath());
-        try {
-            Files.setPosixFilePermissions(path, perms);
-        } catch (IOException e) {
-            e.printStackTrace();
-            log.error("file can not given Permission......");
-        }
+    public CustomShutdownHookProcessDestroyer setWatchDog(File watchDog) {
+        this.watchDog = watchDog;
+        return this;
     }
 
 }

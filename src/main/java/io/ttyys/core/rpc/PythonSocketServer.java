@@ -1,6 +1,7 @@
 package io.ttyys.core.rpc;
 
-import io.ttyys.core.processor.CustomShutdownHookProcessDestroyer;
+import com.sun.jna.Platform;
+import io.ttyys.core.processor.UnsupportedOSException;
 import org.apache.commons.exec.*;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -26,7 +27,8 @@ public class PythonSocketServer {
         executor.setWorkingDirectory(this.executable.workingDir);
         executor.setStreamHandler(new PumpStreamHandler(new LogHandler(Level.INFO), new LogHandler(Level.ERROR)));
         executor.setWatchdog(new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT));
-        executor.setProcessDestroyer(new CustomShutdownHookProcessDestroyer());
+        //executor.setProcessDestroyer(new CustomShutdownHookProcessDestroyer().setWorkingDir(this.executable.workingDir).setWatchDog(this.executable.createWatchDogFile(this.executable.workingDir.toPath())));
+        executor.setProcessDestroyer(new ShutdownHookProcessDestroyer());
         executor.execute(this.executable.commandLine);
     }
 
@@ -69,6 +71,7 @@ public class PythonSocketServer {
         }
 
         private File createExecutableFile(Path workingDir) throws IOException {
+            // server script resolve
             InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("bin/osx/server");
             if (is == null) {
                 is = Thread.currentThread().getContextClassLoader().getResourceAsStream("bin/server");
@@ -83,6 +86,27 @@ public class PythonSocketServer {
             Files.setPosixFilePermissions(executable, PosixFilePermissions.fromString("rwx------"));
             FileUtils.copyInputStreamToFile(is, executable.toFile());
             return executable.toFile();
+        }
+
+        private File createWatchDogFile(Path workingDir) throws IOException {
+            // watch dog script resolve
+
+            InputStream watchDogStream = null;
+            if (Platform.isLinux() || Platform.isAIX() || Platform.isMac()) {
+                watchDogStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("shell/watchDog.sh");
+            } else if (Platform.isWindows()) {
+                // TODO  support windows os
+                throw new UnsupportedOSException("this os is not unsupported");
+            } else {
+                throw new UnsupportedOSException("this os is not unsupported");
+            }
+            if (watchDogStream == null) {
+                throw new IllegalStateException("could not watch dog. unable to find watch dog file");
+            }
+            Path executableWatchDog = Files.createTempFile(workingDir, "watchDog", "");
+            Files.setPosixFilePermissions(executableWatchDog, PosixFilePermissions.fromString("rwx------"));
+            FileUtils.copyInputStreamToFile(watchDogStream, executableWatchDog.toFile());
+            return executableWatchDog.toFile();
         }
     }
 
