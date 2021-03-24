@@ -2,6 +2,7 @@ package io.ttyys.core.rpc;
 
 import com.sun.jna.Platform;
 import io.ttyys.core.processor.UnsupportedOSException;
+import io.ttyys.core.processor.WatchdogShutdownHookProcessDestroyer;
 import org.apache.commons.exec.*;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -27,9 +28,11 @@ public class PythonSocketServer {
         executor.setWorkingDirectory(this.executable.workingDir);
         executor.setStreamHandler(new PumpStreamHandler(new LogHandler(Level.INFO), new LogHandler(Level.ERROR)));
         executor.setWatchdog(new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT));
-        //executor.setProcessDestroyer(new CustomShutdownHookProcessDestroyer().setWorkingDir(this.executable.workingDir).setWatchDog(this.executable.createWatchDogFile(this.executable.workingDir.toPath())));
-        executor.setProcessDestroyer(new ShutdownHookProcessDestroyer());
-        executor.execute(this.executable.commandLine);
+//        executor.setProcessDestroyer(new ShutdownHookProcessDestroyer());
+        WatchdogShutdownHookProcessDestroyer destroyer = new WatchdogShutdownHookProcessDestroyer();
+        executor.setProcessDestroyer(destroyer);
+        executor.execute(this.executable.commandLine, new DefaultExecuteResultHandler());
+        destroyer.watch();
     }
 
     static class LogHandler extends LogOutputStream {
@@ -71,7 +74,6 @@ public class PythonSocketServer {
         }
 
         private File createExecutableFile(Path workingDir) throws IOException {
-            // server script resolve
             InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("bin/osx/server");
             if (is == null) {
                 is = Thread.currentThread().getContextClassLoader().getResourceAsStream("bin/server");
