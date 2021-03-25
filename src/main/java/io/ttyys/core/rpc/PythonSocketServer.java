@@ -28,8 +28,7 @@ public class PythonSocketServer {
         executor.setWorkingDirectory(this.executable.workingDir);
         executor.setStreamHandler(new PumpStreamHandler(new LogHandler(Level.INFO), new LogHandler(Level.ERROR)));
         executor.setWatchdog(new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT));
-//        executor.setProcessDestroyer(new ShutdownHookProcessDestroyer());
-        WatchdogShutdownHookProcessDestroyer destroyer = new WatchdogShutdownHookProcessDestroyer();
+        WatchdogShutdownHookProcessDestroyer destroyer = new WatchdogShutdownHookProcessDestroyer().setCleanDir(this.executable.workingDir);
         executor.setProcessDestroyer(destroyer);
         executor.execute(this.executable.commandLine, new DefaultExecuteResultHandler());
         destroyer.watch();

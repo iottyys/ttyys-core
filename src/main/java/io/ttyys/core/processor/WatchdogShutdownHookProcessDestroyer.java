@@ -1,16 +1,23 @@
 package io.ttyys.core.processor;
 
+import com.sun.jna.Platform;
 import org.apache.commons.exec.*;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
+import java.util.stream.Collectors;
 
 public class WatchdogShutdownHookProcessDestroyer implements ProcessDestroyer, Runnable, Watchdog {
     private final Vector<Process> processes = new Vector<Process>();
@@ -18,6 +25,8 @@ public class WatchdogShutdownHookProcessDestroyer implements ProcessDestroyer, R
     private WatchdogShutdownHookProcessDestroyer.ProcessDestroyerImpl destroyProcessThread = null;
     private volatile boolean running = false;
     private boolean added = false;
+
+    private File cleanDir;
 
     @Override
     public void run() {
@@ -28,8 +37,7 @@ public class WatchdogShutdownHookProcessDestroyer implements ProcessDestroyer, R
                 final Process process = e.nextElement();
                 try {
                     process.destroy();
-                }
-                catch (final Throwable t) {
+                } catch (final Throwable t) {
                     System.err.println("Unable to terminate process during process shutdown");
                 }
             }
@@ -92,10 +100,15 @@ public class WatchdogShutdownHookProcessDestroyer implements ProcessDestroyer, R
     @Override
     public void watch() {
         try {
-            new WatchdogProcess().start();
+            new WatchdogProcess(this.processes, this.cleanDir).start();
         } catch (IOException e) {
-            // todo runtime exception
+            throw new RuntimeException("start watch dog fail, please check files");
         }
+    }
+
+    public WatchdogShutdownHookProcessDestroyer setCleanDir(File cleanDir) {
+        this.cleanDir = cleanDir;
+        return this;
     }
 
     private class ProcessDestroyerImpl extends Thread {
@@ -122,23 +135,32 @@ public class WatchdogShutdownHookProcessDestroyer implements ProcessDestroyer, R
         private final File workingDir;
         private final CommandLine commandLine;
 
-        WatchdogProcess() throws IOException {
-            Path workingPath = Files.createTempDirectory(""); // 主进程pid+watchdog
+        WatchdogProcess(Vector<Process> processes, File cleanDir) throws IOException {
+            Path workingPath = Files.createTempDirectory("watchdog"); // 主进程pid+watchdog
             this.workingDir = workingPath.toFile();
             workingPath.toFile().deleteOnExit();
-            InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("bin/watchdog");
-            if (is == null) {
-                is = Thread.currentThread().getContextClassLoader().getResourceAsStream("bin/watchdog.bat");
+            String currentPid = this.getCurrentPid();
+            Map<String, String> params = new HashMap<>();
+            params.put("mainPid", currentPid);
+            params.put("extensionPids", processes.stream().map(process -> this.getProcessId(process)).collect(Collectors.joining(", ")));
+            params.put("workingDir",cleanDir.getAbsolutePath());
+            // TODO tengwang 添加shell后台删除自己目录功能
+            InputStream watchDogStream;
+            if (Platform.isLinux() || Platform.isAIX() || Platform.isMac()) {
+                watchDogStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("shell/watchDog.sh");
+            } else if (Platform.isWindows()) {
+                // TODO  support windows os
+                throw new UnsupportedOSException("this os is not unsupported");
+            } else {
+                throw new UnsupportedOSException("this os is not unsupported");
             }
-            if (is == null) {
-                throw new IllegalStateException("could not exec watchdog. unable to find watchdog executable");
+            if (watchDogStream == null) {
+                throw new IllegalStateException("could not watch dog. unable to find watch dog file");
             }
-            Path executable = Files.createTempFile(workingPath, "server", "");
+            Path executable = Files.createTempFile(workingPath, "watchdog", "");
             Files.setPosixFilePermissions(executable, PosixFilePermissions.fromString("rwx------"));
-            FileUtils.copyInputStreamToFile(is, executable.toFile());
-            executable.toFile().deleteOnExit();
+            FileUtils.copyInputStreamToFile(watchDogStream, executable.toFile());
             this.commandLine = new CommandLine(executable.toFile());
-            // todo  add param   main pid   watch pids
         }
 
         public void start() throws IOException {
@@ -148,6 +170,36 @@ public class WatchdogShutdownHookProcessDestroyer implements ProcessDestroyer, R
             executor.setWatchdog(new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT));
             executor.setProcessDestroyer(new ShutdownHookProcessDestroyer());
             executor.execute(this.commandLine, new DefaultExecuteResultHandler());
+        }
+
+        private String getCurrentPid() {
+            RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+            String pid = runtimeMXBean.getName().split("@")[0];
+            return pid;
+        }
+
+        private String getProcessId(Process process) {
+            long pid = -1;
+            Field field = null;
+            if (Platform.isWindows()) {
+                try {
+                    field = process.getClass().getDeclaredField("handle");
+                    field.setAccessible(true);
+                    pid = Kernel32.INSTANCE.GetProcessId((Long) field.get(process));
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            } else if (Platform.isLinux() || Platform.isAIX() || Platform.isMac()) {
+                try {
+                    Class<?> clazz = Class.forName("java.lang.UNIXProcess");
+                    field = clazz.getDeclaredField("pid");
+                    field.setAccessible(true);
+                    pid = (Integer) field.get(process);
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
+            }
+            return String.valueOf(pid);
         }
     }
 }
