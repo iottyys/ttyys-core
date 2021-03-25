@@ -1,16 +1,18 @@
 package io.ttyys.algo
 
-import io.ttyys.algo.springboot.EnableDataSupport
+import algo.text.Message
+import io.ttyys.algo.springboot.EnableAlgoSupport
 import io.ttyys.algo.springboot.SpringBootAutoConfiguration
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest(classes = SpringBootAutoConfiguration)
-@EnableDataSupport
+@EnableAlgoSupport
 class PythonServerTest {
 
     @Test
     void baseTest() {
-        AlgorithmFactory.SIMILARITY.invoker().send()
+        String resp = AlgorithmFactory.SIMILARITY.invoker().send(Message.newBuilder().setBody('a').setFrom('b').setTo('c').build())
+        println resp
     }
 }

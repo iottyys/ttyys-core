@@ -1,5 +1,8 @@
 # -*-coding:utf-8-*-
 
+import psutil
+import time
+from threading import Thread
 import socketserver
 from socketserver import TCPServer, ThreadingMixIn
 from typing import Tuple
@@ -15,6 +18,16 @@ from rpcserver.avro import handler as avro_handler
 class Protocol(Enum):
     Protobuf = 0
     Avro = 1
+
+
+def process_check(pid, server):
+    while 1:
+        try:
+            psutil.Process(pid)
+            time.sleep(1)
+        except psutil.NoSuchProcess:
+            break
+    server.shutdown()
 
 
 class SocketServer:
@@ -37,7 +50,7 @@ class SocketServer:
         for protocol in protocols:
             self.avro_proxy_factory.load(protocol)
 
-    def run(self) -> None:
+    def run(self, pid) -> None:
         logger.info('starting server on host: %s - port: %d' % (self.host, self.port))
         handler = avro_handler.RequestHandler
         if self.proto == Protocol.Protobuf:
@@ -45,6 +58,8 @@ class SocketServer:
         server = None
         try:
             server = ThreadingTCPServer((self.host, self.port), handler, self)
+            if pid is not None:
+                Thread(target=process_check, args=(pid, server), daemon=True).start()
             server.serve_forever()
         except KeyboardInterrupt:
             if server is not None:

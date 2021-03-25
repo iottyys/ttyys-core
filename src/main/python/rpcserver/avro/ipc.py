@@ -40,14 +40,22 @@ def _load_response_schema():
 
 
 def adjust_json(proto):
+    if proto.get("javaAnnotation") is not None:
+        del proto['javaAnnotation']
     types = proto.get("types")
     if types is not None and len(types) == 0:
         del proto['types']
     elif types is not None:
         for t in types:
+            if t.get('javaAnnotation'):
+                del t['javaAnnotation']
             fields = t.get('fields')
             if fields is not None and len(fields) == 0:
                 del t['fields']
+            elif fields is not None:
+                for f in fields:
+                    if f.get('javaAnnotation'):
+                        del f['javaAnnotation']
     messages = proto.get("messages")
     if messages is not None and len(messages) == 0:
         del proto['messages']
@@ -56,6 +64,13 @@ def adjust_json(proto):
             errors = message.get('errors')
             if errors is not None and len(errors) == 0:
                 message.pop('errors')
+            if message.get('javaAnnotation'):
+                del message['javaAnnotation']
+            reqs = message.get('request')
+            if reqs is not None:
+                for req in reqs:
+                    if req.get('javaAnnotation'):
+                        del req['javaAnnotation']
 
 
 class DispatcherResponder(object):

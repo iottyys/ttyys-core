@@ -64,6 +64,8 @@ dependencies {
     implementation "org.apache.avro:avro-ipc-netty:${avroVersion}"
     implementation "com.google.protobuf:protobuf-java:${protobufVersion}"
     implementation "org.apache.commons:commons-exec:${execVersion}"
+    implementation "org.zeroturnaround:zt-exec:1.12"
+    implementation "org.zeroturnaround:zt-process-killer:1.10"
 
     // for camel
     implementation "org.apache.camel.springboot:camel-spring-boot-starter"

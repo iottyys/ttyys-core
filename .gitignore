@@ -34,3 +34,4 @@ nbdist/
 /web/package-lock.json
 /web/.idea/
 
+__pycache__

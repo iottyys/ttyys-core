@@ -8,5 +8,5 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 @Documented
 @Import({SpringBootAutoConfiguration.class})
-public @interface EnableDataSupport {
+public @interface EnableAlgoSupport {
 }

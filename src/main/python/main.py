@@ -4,7 +4,7 @@ import algo
 import sys
 import glob
 import os
-import asyncio
+# import asyncio
 
 from avro import protocol
 
@@ -30,7 +30,10 @@ if __name__ == '__main__':
     # from rpcserver.async_server import main
     # server.protocols = load_services()
     # asyncio.run(main())
+    parent_pid = None
+    if len(sys.argv) > 1:
+        parent_pid = int(sys.argv[1])
     server = SocketServer(host='0.0.0.0', port=22222, protocol=Protocol.Avro)
     server.register_service()
     server.register_avro_protocols(load_avro_services())
-    server.run()
+    server.run(parent_pid)
