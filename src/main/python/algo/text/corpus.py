@@ -9,6 +9,15 @@ from gensim.similarities import docsim
 from simhash import Simhash
 
 
+def send(message):
+    print("the folder : ", message['message']['folder'])
+    print("the stop : ", message['message']['stop'])
+    print("the dict : ", message['message']['dict'])
+    print("the result : ", message['message']['result'])
+    similarity(message['message']['folder'], message['message']['stop'], message['message']['dict'], message['message']['result'])
+    return 'response: ' + str(message)
+
+
 def similarity(folder_path, stop_word_file, user_dict, result_file):
     print("start time is :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
     files = load_files(folder_path)
@@ -53,7 +62,6 @@ def cut(doc_file, stop_word_file, user_dict):
     if os.path.exists(user_dict):
         jieba.load_userdict(user_dict)
     segmented_words = jieba.lcut('，'.join([line.strip() for line in open(doc_file, 'r', encoding='utf-8').readlines()]))
-    # segmented_words = jieba.lcut('，'.join([line.strip()for line in open('/Volumes/works/tmp/text/2.txt', 'r', encoding='utf-8').readlines()]))
     # 清理停用词
     if os.path.exists(stop_word_file):
         stopwords = [line.replace('\n', '') for line in open(stop_word_file, 'r', encoding='utf-8').readlines()]
@@ -150,3 +158,4 @@ if __name__ == '__main__':
                "/Volumes/works/tmp/text/.similarity/stop_word.txt",
                "/Volumes/works/tmp/text/.similarity/user_dict.txt",
                '/Volumes/works/tmp/text/.similarity/log.txt')
+

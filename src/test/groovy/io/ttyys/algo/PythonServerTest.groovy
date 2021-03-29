@@ -10,9 +10,15 @@ import org.springframework.boot.test.context.SpringBootTest
 @EnableAlgoSupport
 class PythonServerTest {
 
+//    @Test
+//    void baseTest() {
+//        String resp = AlgorithmFactory.SIMILARITY.invoker().send(Message.newBuilder().setBody('a').setFrom('b').setTo('c').build())
+//        println resp
+//    }
+
     @Test
-    void baseTest() {
-        String resp = AlgorithmFactory.SIMILARITY.invoker().send(Message.newBuilder().setBody('a').setFrom('b').setTo('c').build())
+    void corpusTest() {
+        String resp = AlgorithmFactory.CORPUS.invoker().send(Message.newBuilder().setFolder('/Volumes/works/tmp/text').setStop('/Volumes/works/tmp/text/.similarity/stop_word.txt').setDict('/Volumes/works/tmp/text/.similarity/user_dict.txt').setResult("'/Volumes/works/tmp/text/.similarity/log.txt'").build())
         println resp
     }
 }

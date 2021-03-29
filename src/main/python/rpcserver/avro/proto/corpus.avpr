@@ -1,0 +1,41 @@
+{
+  "namespace": "algo.text",
+  "protocol": "corpus",
+  "javaAnnotation": "io.ttyys.avro.annotation.enhance.Transceiver(value = io.ttyys.avro.annotation.enhance.Transceiver.TransceiverType.TCP, ipcServer = \"localhost\", ipcPort = 22222)",
+  "types": [
+    {
+      "name": "Message",
+      "type": "record",
+      "fields": [
+        {
+          "name": "folder",
+          "type": "string"
+        },
+        {
+          "name": "stop",
+          "type": "string"
+        },
+        {
+          "name": "dict",
+          "type": "string"
+        },
+        {
+          "name": "result",
+          "type": "string"
+        }
+
+      ]
+    }
+  ],
+  "messages": {
+    "send": {
+      "request": [
+        {
+          "name": "message",
+          "type": "Message"
+        }
+      ],
+      "response": "string"
+    }
+  }
+}
