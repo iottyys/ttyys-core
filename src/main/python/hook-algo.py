@@ -23,6 +23,14 @@ datas = []
 datas += collect_data_files('rpcserver.avro.proto')
 
 
+datas += collect_data_files('jieba')\
+         + collect_data_files('jieba.posseg')\
+         + collect_data_files('jieba.lac_small')\
+         + collect_data_files('jieba.lac_small.model_baseline')\
+         + collect_data_files('jieba.finalseg')\
+         + collect_data_files('jieba.analyse')
+
+
 datas += collect_data_files('gensim')\
          + collect_data_files('gensim.models')\
          + collect_data_files('gensim.corpora')\
