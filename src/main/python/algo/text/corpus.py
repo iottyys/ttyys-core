@@ -10,15 +10,17 @@ from simhash import Simhash
 
 
 def send(message):
-    print("the folder : ", message['message']['folder'])
-    print("the stop : ", message['message']['stop'])
-    print("the dict : ", message['message']['dict'])
-    print("the result : ", message['message']['result'])
-    similarity(message['message']['folder'], message['message']['stop'], message['message']['dict'], message['message']['result'])
-    return 'the result file address is : ' + message['message']['result']
+    print("the folder_path : ", message['message']['folder_path'])
+    print("the stop_word_file : ", message['message']['stop_word_file'])
+    print("the user_dict : ", message['message']['user_dict'])
+    print("the cos_result_file : ", message['message']['cos_result_file'])
+    print("the sim_result_file : ", message['message']['sim_result_file'])
+    similarity(message['message']['folder_path'], message['message']['stop_word_file'], message['message']['user_dict'],
+               message['message']['cos_result_file'], message['message']['sim_result_file'])
+    return 'the result generate ok, please use new result...'
 
 
-def similarity(folder_path, stop_word_file, user_dict, result_file):
+def similarity(folder_path, stop_word_file, user_dict, cos_result_file, sim_result_file):
     print("start time is :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
     files = load_files(folder_path)
     words = [cut(file, stop_word_file, user_dict) for file in files]
@@ -35,7 +37,8 @@ def similarity(folder_path, stop_word_file, user_dict, result_file):
     sims = simhash_tfidf(words, tfidf)
     log1 = sim_out(files, sims)
 
-    write_file(result_file, log + log1)
+    write_file(cos_result_file, log)
+    write_file(sim_result_file, log1)
     print("end time is :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
 
@@ -83,15 +86,11 @@ def simhash(words, doc_corpus):
     ws = []
     # doc_corpus 中向量索引与词的对应关系处理
     [ws.extend(sorted(set([w1 for w1 in w if w1 not in ws]))) for w in words]
-    # print(ws)
     for word, corpus in zip(words, doc_corpus):
-        # print(word)
-        # print(corpus)
         feature = [(ws[c[0]], c[1]) for c in corpus]
         sim = Simhash(word)
         sim.build_by_features(feature)
         sims.append(sim)
-        # print()
     return sims
 
 
@@ -100,37 +99,35 @@ def simhash_tfidf(words, tfidfs):
     ws = []
     # doc_corpus 中向量索引与词的对应关系处理
     [ws.extend(sorted(set([w1 for w1 in w if w1 not in ws]))) for w in words]
-    # print(ws)
     for word, tfidf in zip(words, tfidfs):
-        # print(word)
-        # print(tfidf)
         feature = [(ws[c[0]], c[1]) for c in tfidf]
         sim = Simhash(word)
         sim.build_by_features(feature)
         sims.append(sim)
-        # print()
     return sims
 
 
 def sim_out(files, sims):
-    log = 'simhash ==>>\n'
+    # log = 'simhash ==>>\n'
+    log = ''
     for i, sim in enumerate(sims):
         for j in range(i + 1, len(sims)):
             if files[i] == files[j]:
                 continue
-            str1 = '% 20s  %s  % 20s' % (files[i], '<==>', files[j])
+            # str1 = '% 20s  %s  % 20s' % (files[i], '<==>', files[j])
+            str1 = '%20s %s %20s' % (os.path.basename(files[i]), ':', os.path.basename(files[j]))
             if len(str1) < 52:
                 str1 += (' ' * (52 - len(str1)))
             dis = sim.distance(sims[j])
             rate = (100.0 * (dis - 3) / 61) if dis > 3 else 100.0
-            log += (str1 + '[distance]:' + str(dis) + '[rate]: %.8f' % rate + '\n')
+            # log += (str1 + '[distance]:' + str(dis) + '[rate]: %.8f' % rate + '\n')
+            log += (str1 + '- %.8f' % rate + '\n')
         log += '\n'
-    print(log)
     return log
 
 
 def idx_out(files, idx):
-    log = 'docsim ==>>\n'
+    log = ''
     for i, row in enumerate(idx):
         for file, item in zip(files, row):
             if files[i] == file:
@@ -138,10 +135,12 @@ def idx_out(files, idx):
             # if item == 0:
             # 相似度为0的
             # continue
-            str = '% 20s  %s  % 20s' % (files[i], '<==>', file)
+            # str = '% 20s  %s  % 20s' % (files[i], ':', file)
+            str = '% 20s  %s  % 20s' % (os.path.basename(files[i]), ':', os.path.basename(file))
             if len(str) < 52:
                 str += (' ' * (52 - len(str)))
-            log += (str + '[similarity]: %12s' % item + '[rate]: %.8f' % (item * 100.0) + '\n')
+            # log += (str + '[similarity]: %12s' % item + '[rate]: %.8f' % (item * 100.0) + '\n')
+            log += (str + '- %.8f' % (item * 100.0) + '\n')
         log += '\n'
     print(log)
     return log
@@ -155,7 +154,9 @@ def write_file(file_path, log):
 
 if __name__ == '__main__':
     similarity("/Volumes/works/tmp/text",
-               "/Volumes/works/tmp/text/.similarity/stop_word.txt",
-               "/Volumes/works/tmp/text/.similarity/user_dict.txt",
-               '/Volumes/works/tmp/text/.similarity/log.txt')
+               "/Volumes/works/tmp/text/.similarity/stop_word",
+               "/Volumes/works/tmp/text/.similarity/user_dict",
+               '/Volumes/works/tmp/text/.similarity/cos_result',
+               '/Volumes/works/tmp/text/.similarity/sim_result',
+               )
 

@@ -8,19 +8,23 @@
       "type": "record",
       "fields": [
         {
-          "name": "folder",
+          "name": "folder_path",
           "type": "string"
         },
         {
-          "name": "stop",
+          "name": "stop_word_file",
           "type": "string"
         },
         {
-          "name": "dict",
+          "name": "user_dict",
           "type": "string"
         },
         {
-          "name": "result",
+          "name": "cos_result_file",
+          "type": "string"
+        },
+        {
+          "name": "sim_result_file",
           "type": "string"
         }
       ]

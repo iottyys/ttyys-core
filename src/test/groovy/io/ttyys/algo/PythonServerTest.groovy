@@ -6,13 +6,20 @@ import io.ttyys.algo.springboot.SpringBootAutoConfiguration
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 
-@SpringBootTest(classes = SpringBootAutoConfiguration)
+// @SpringBootTest(classes = SpringBootAutoConfiguration)
 @EnableAlgoSupport
 class PythonServerTest {
 
     @Test
     void corpusTest() {
-        String resp = AlgorithmFactory.ALGORITHM.invoker().send(Message.newBuilder().setFolder('/Volumes/works/tmp/text').setStop('/Volumes/works/tmp/text/.similarity/stop_word.txt').setDict('/Volumes/works/tmp/text/.similarity/user_dict.txt').setResult('/Volumes/works/tmp/text/.similarity/log.txt').build())
+        String resp = AlgorithmFactory.ALGORITHM.invoker().send(
+                Message.newBuilder()
+                        .setFolderPath('/Volumes/works/tmp/text')
+                        .setStopWordFile('/Volumes/works/tmp/text/.similarity/stop_word')
+                        .setUserDict('/Volumes/works/tmp/text/.similarity/user_dict')
+                        .setCosResultFile('/Volumes/works/tmp/text/.similarity/cos_result')
+                        .setSimResultFile('/Volumes/works/tmp/text/.similarity/sim_result')
+                        .build())
         println resp
     }
 }

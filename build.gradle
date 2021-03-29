@@ -92,15 +92,24 @@ dependencies {
     runtimeOnly "com.h2database:h2"
 }
 
-task avprPython(type: Sync) {
+task avprPython(type: Copy) {
+    doFirst {
+        delete fileTree('src/main/python/rpcserver/avro/proto', {
+            exclude '__init__.py'
+        })
+        def emptyDirs = []
+        fileTree ('src/main/python/rpcserver/avro/proto').visit { def fileVisitDetails ->
+            def file = fileVisitDetails.file
+
+            if (file.isDirectory() && (file.list().length == 0)) {
+                emptyDirs << file
+            }
+        }
+        emptyDirs.each { dir -> dir.delete() }
+    }
     from 'src/main/resources/avro'
     into 'src/main/python/rpcserver/avro/proto'
     include '**/*.avpr'
-    copy {
-        from 'src/main/python/rpcserver/avro/__init__.py'
-        into 'src/main/python/rpcserver/avro/proto'
-        include '__init__.py'
-    }
 }
 
 task packagePythonLinux(type: Exec) {
