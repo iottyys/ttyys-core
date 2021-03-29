@@ -164,7 +164,7 @@ task installPython(type: Copy) {
 }
 
 processResources {
-    // dependsOn installPython
+    dependsOn installPython
 }
 
 compileJava {
