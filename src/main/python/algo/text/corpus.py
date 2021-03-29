@@ -15,7 +15,7 @@ def send(message):
     print("the dict : ", message['message']['dict'])
     print("the result : ", message['message']['result'])
     similarity(message['message']['folder'], message['message']['stop'], message['message']['dict'], message['message']['result'])
-    return 'response: ' + str(message)
+    return 'the result file address is : ' + message['message']['result']
 
 
 def similarity(folder_path, stop_word_file, user_dict, result_file):

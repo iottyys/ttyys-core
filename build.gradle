@@ -96,6 +96,11 @@ task avprPython(type: Sync) {
     from 'src/main/resources/avro'
     into 'src/main/python/rpcserver/avro/proto'
     include '**/*.avpr'
+    copy {
+        from 'src/main/python/rpcserver/avro/__init__.py'
+        into 'src/main/python/rpcserver/avro/proto'
+        include '__init__.py'
+    }
 }
 
 task packagePythonLinux(type: Exec) {
@@ -159,7 +164,7 @@ task installPython(type: Copy) {
 }
 
 processResources {
-    dependsOn installPython
+    // dependsOn installPython
 }
 
 compileJava {
