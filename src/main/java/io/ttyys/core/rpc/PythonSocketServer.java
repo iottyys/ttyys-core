@@ -1,6 +1,7 @@
 package io.ttyys.core.rpc;
 
-import org.apache.commons.exec.*;
+import com.sun.jna.Platform;
+import org.apache.commons.exec.CommandLine;
 import org.apache.commons.io.FileUtils;
 import org.zeroturnaround.exec.ProcessExecutor;
 import org.zeroturnaround.exec.ProcessResult;
@@ -64,12 +65,13 @@ public class PythonSocketServer {
         }
 
         private File createExecutableFile(Path workingDir) throws IOException {
-            InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("bin/osx/server");
-            if (is == null) {
-                is = Thread.currentThread().getContextClassLoader().getResourceAsStream("bin/server");
-            }
-            if (is == null) {
+            InputStream is = null;
+            if (Platform.isWindows() && Platform.is64Bit()) {
                 is = Thread.currentThread().getContextClassLoader().getResourceAsStream("bin/server.exe");
+            } else if (Platform.isLinux()) {
+                is = Thread.currentThread().getContextClassLoader().getResourceAsStream("bin/server");
+            } else if (Platform.isMac()) {
+                is = Thread.currentThread().getContextClassLoader().getResourceAsStream("bin/osx/server");
             }
             if (is == null) {
                 throw new IllegalStateException("could not exec server. unable to find server executable");
